@@ -1,1 +1,11 @@
-name,lookalike_of,appearance,cause_or_context,size_range,how_to_generate
+name,role,lookalike_of,appearance,cause_or_context,size_range,how_to_generate,source
+fire_extinguisher,required,,red cylinder with hose and pressure gauge,mounted on wall or placed on floor near entrance,40-160 px (estimate),inpaint with box prompt,team choice (not in Home Front Command page)
+fake_extinguisher,lookalike,fire_extinguisher,red cylinder without hose or gauge,decoy or empty canister,40-160 px (estimate),inpaint with box prompt using attribute list,team choice
+vent_cover,required,,ventilation opening with a cover in place,wall opening with cover,30-90 px (estimate),inpaint with box prompt,"HFC: ""לוודא כי המכסה של פתח האוורור קיים"""
+vent_no_cover,lookalike,vent_cover,ventilation opening without a cover,missing or removed cover,30-90 px (estimate),inpaint with box prompt,HFC (derived from the cover requirement)
+shelter_sign,required,,sign reading shelter on the door,hung on the shelter door,40-120 px (estimate),inpaint with box prompt; conditional on feasibility run (Hebrew text),"HFC: ""לתלות שלט 'מקלט' על דלת המקלט"""
+wrong_sign,lookalike,shelter_sign,sign with different text,other sign in the same place,40-120 px (estimate),inpaint with box prompt; conditional on feasibility run,HFC (derived)
+light_fixture,required,,ceiling or wall light fixture (presence only; working state is not visible),ceiling or wall,40-150 px (estimate),inpaint with box prompt,"HFC: ""לוודא שהתאורה תקינה"" (presence only)"
+drinking_water,required,,bottle or container that looks like drinking water in any material,on floor or shelf,30-120 px (estimate),inpaint with box prompt,team choice (not in Home Front Command page)
+gas_cylinder,forbidden,,gas cylinder,stored inside or near the shelter,60-200 px (estimate),inpaint with box prompt,"HFC: ""מיכלי גז במרחק של פחות משלושה מטרים מפתחי המקלט, יש לפנות"" (any cylinder in the image counts)"
+glass_item,forbidden,,mirror or framed picture with glass,hung on wall,80-300 px (estimate),inpaint with box prompt,"HFC: ""אין לתלות פריטי זכוכית או קרמיקה שעלולים להתנפץ"""
