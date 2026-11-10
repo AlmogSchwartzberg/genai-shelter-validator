@@ -3,22 +3,54 @@ project_name: genai-shelter-validator
 seed: 42
 
 # Google Drive (mounted in Colab). Images and models live here, never in Git.
+# Three folders, each created when first needed: real/, synthetic/, results/
 drive_root: /content/drive/MyDrive/genai-shelter-validator
 
 domain: shelters       # check whether a shelter is valid: required objects + lookalike distractors
-object_classes: []     # filled from Data/objects_table.csv (required objects and their lookalikes)
+exclude_classes: []    # classes from Data/objects_table.csv to drop. If the Hebrew-sign feasibility run
+                       # fails: [shelter_sign, wrong_sign] (PRD 3.2). Empty = all rows of the table.
+
+# LLM that writes the attribute lists (PRD 3.11). API key: Colab Secrets (key icon), name below.
+llm:
+  model: gpt-4o
+  secret_name: openai_key
 
 generation:
-  model: stable-diffusion-v1-5/stable-diffusion-inpainting   # open question
+  model: stable-diffusion-v1-5/stable-diffusion-inpainting   # open question (PRD 14)
+  background_model: stable-diffusion-v1-5/stable-diffusion-v1-5   # text-to-image, empty shelter backgrounds
+  condition_model: timbrooks/instruct-pix2pix                 # method B: change capture conditions, layout preserved
+  add_objects_backend: inpaint                                # inpaint (mask = box) | gligen (box + phrase)
+  gligen_model: masterful/gligen-1-4-inpainting-text-box
   image_size: 512
+  steps: 30
+  guidance_scale: 7.5
   methods: [add_objects, capture_conditions]   # add_objects also inserts lookalikes (PRD 3.4)
   conditions: [dark, side_light, glare, blur, noise, background]
-  images_per_class: 100
+  images_per_class: 100               # method A, per class (generated; PRD needs >=100 per class after filtering)
+  images_per_condition: 40            # method B, per condition
+
+validation:
+  min_per_class: 100       # PRD 3.7: classes with fewer passed images are marked red
+  dino_model: IDEA-Research/grounding-dino-base   # also the zero-shot baseline (PRD 3.9)
+  dino_box_threshold: 0.2
+  dino_iou: 0.3            # detected object must overlap the recorded box at least this much
+  min_std: 8               # image is "destroyed" if its pixel std is below this
 
 detection:
-  models:              # open question; need at least 3, at least one Transformer-based (PRD 3.8)
-    - PekingU/rtdetr_r50vd
+  models:              # open question (PRD 14); need at least 3, at least one Transformer-based (PRD 3.8)
+    - PekingU/rtdetr_r50vd                    # RT-DETR (Transformer)
+    - facebook/detr-resnet-50                 # DETR (Transformer, course lecture 2333)
+    - microsoft/conditional-detr-resnet-50    # Conditional DETR (Transformer)
   batch_size: 4
+  freeze_backbone: true      # requires_grad_(False) on the CNN backbone, train encoder/decoder/heads
+  image_size: 640
+
+training:                # identical for every model and mode; only the data changes (PRD 3.8)
+  epochs: 50
+  learning_rate: 5.0e-5
+  weight_decay: 1.0e-4
+  patience: 10           # early stopping on control-split loss
+  synthetic_per_mode: 240   # synthetic images added in modes 2-5 (same amount in every mode, PRD 3.9)
 
 split: {train: 0.8, test: 0.2, val_from_train: 0.1}   # PRD 3.1, 3.3; seed above
 small_object_px: 32    # COCO definition of a small object
