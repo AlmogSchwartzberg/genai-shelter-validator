@@ -1,4 +1,4 @@
-# SynthDetect
+# GenAI Shelter Validator
 
 Course project for *Deep Generative Models for Visual Data* (HIT).
 We test whether synthetic images generated with Stable Diffusion improve light fine-tuning of existing Hugging Face object detection models, measured on real images only. Domain: shelters. The models detect the objects a valid shelter must contain and lookalikes that appear valid but are not. Full requirements: [PRD.md](PRD.md).
@@ -19,7 +19,7 @@ Images, checkpoints and models are stored in Google Drive (`drive_root` in `conf
 
 ## Getting started
 
-1. Open [`00_environment_check.ipynb` in Colab](https://colab.research.google.com/github/AlmogSchwartzberg/genai-temp-project-name/blob/dev/Code/00_environment_check.ipynb).
+1. Open [`00_environment_check.ipynb` in Colab](https://colab.research.google.com/github/AlmogSchwartzberg/genai-shelter-validator/blob/dev/Code/00_environment_check.ipynb).
 2. Runtime > Change runtime type > **T4 GPU**.
 3. Runtime > Run all. The last cell prints a pass/fail summary.
 

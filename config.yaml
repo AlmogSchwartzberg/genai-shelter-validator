@@ -1,9 +1,9 @@
 # Single source of truth for every notebook. Change a line here, rerun.
-project_name: synthdetect
+project_name: genai-shelter-validator
 seed: 42
 
 # Google Drive (mounted in Colab). Images and models live here, never in Git.
-drive_root: /content/drive/MyDrive/synthdetect
+drive_root: /content/drive/MyDrive/genai-shelter-validator
 
 domain: shelters       # check whether a shelter is valid: required objects + lookalike distractors
 object_classes: []     # filled from Data/objects_table.csv (required objects and their lookalikes)
