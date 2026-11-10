@@ -5,20 +5,20 @@ seed: 42
 # Google Drive (mounted in Colab). Images and models live here, never in Git.
 drive_root: /content/drive/MyDrive/synthdetect
 
-domain: TBD            # open question (PRD section 14)
-object_classes: []     # filled from objects_table.csv once the domain is chosen
+domain: shelters       # check whether a shelter is valid: required objects + lookalike distractors
+object_classes: []     # filled from Data/objects_table.csv (required objects and their lookalikes)
 
 generation:
   model: stable-diffusion-v1-5/stable-diffusion-inpainting   # open question
   image_size: 512
-  methods: [add_objects, capture_conditions]
+  methods: [add_objects, capture_conditions]   # add_objects also inserts lookalikes (PRD 3.4)
   conditions: [dark, side_light, glare, blur, noise, background]
   images_per_class: 100
 
 detection:
-  models:              # open question; at least one Transformer-based
+  models:              # open question; need at least 3, at least one Transformer-based (PRD 3.8)
     - PekingU/rtdetr_r50vd
   batch_size: 4
 
-split: {tune: 0.6, val: 0.2, test: 0.2}
+split: {train: 0.8, test: 0.2, val_from_train: 0.1}   # PRD 3.1, 3.3; seed above
 small_object_px: 32    # COCO definition of a small object
