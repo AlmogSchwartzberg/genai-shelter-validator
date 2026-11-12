@@ -17877,21 +17877,22 @@ body.show-notes .slide.is-active .notes{display:block}
       <div class="slide-inner l-split">
         <header>
           <span class="eyebrow" data-anim="fade">Task and novelty</span>
-          <h2 class="headline" data-anim="rise" data-delay="110">One photo in, one shelter verdict out</h2>
+          <h2 class="headline" data-anim="rise" data-delay="110">One photo in, visible objects out</h2>
         </header>
         <div data-anim="lead" data-delay="260">
-          <p class="body">Detect 10 object classes in a shelter photo, then apply one rule.</p>
+          <p class="body">Detect 10 object classes visible in a shelter photo. We check visible components, not certify a shelter.</p>
           <ul class="bullet-list" style="margin-block-start:22px">
-            <li>Valid only if all required objects are found and no forbidden one</li>
+            <li>Shelter verdict is a limited demo: valid if all required objects and no forbidden one are found</li>
             <li>Innovative: no dataset we found combines required, look-alike and forbidden objects</li>
             <li>Hypothesis: generated data outperforms classical augmentation.</li>
           </ul>
-          <p class="caption" style="margin-block-start:14px">Search log: An extensive web search was conducted in both Hebrew and English, including databases; however, no dataset that precisely matches the task was found.</p>
+          <p class="caption" style="margin-block-start:14px">Search log (12 Nov 2026, EN + HE; Roboflow, Kaggle, Hugging Face, Zenodo, Mendeley, papers): only extinguisher sets (FireSafetyNet), gas cylinders (CylinDeRS) and tiny SUN "bomb shelter" scenes. No shelter set with look-alikes.</p>
         </div>
-        <figure class="illus" data-anim="trail" data-delay="400"><video src="shelter_explainer.mp4" autoplay muted loop playsinline preload="auto" aria-label="Animated illustration: a shelter is cut open, required objects, a lookalike and a gas cylinder appear, the detector boxes each one, and a red cross marks the shelter invalid"></video><figcaption class="caption">Photo in, boxes and class names, then the rule: a gas cylinder makes this shelter invalid.</figcaption></figure>
+        <figure class="illus" data-anim="trail" data-delay="400"><video src="shelter_explainer.mp4" autoplay muted loop playsinline preload="auto" aria-label="Animated illustration: a shelter is cut open, required objects, a lookalike and a gas cylinder appear, the detector boxes each one, and a red cross marks the shelter invalid"></video><figcaption class="caption">Photo in, boxes and class names, then a demo rule: here a gas cylinder would mark the shelter invalid.</figcaption></figure>
 <script>document.addEventListener("slide:enter",function(e){e.target.querySelectorAll("video").forEach(function(v){v.currentTime=0;var p=v.play();if(p&&p.catch)p.catch(function(){});});});</script>
       </div>
-      <aside class="notes">Input: one image. Output: a box and a class name for each object, then the rule. Novelty is claimed only for the combination of the three roles in a shelter. Individual objects such as extinguishers exist in other datasets. Fill in the search log (which datasets, which search terms) before presenting, otherwise the claim cannot be checked. The stronger research angle is the comparison of generation methods.</aside>
+      <aside class="notes">Input: one image. Output: a box and a class name for each object. Say the scope out loud: the task is checking visible components in the photo. The verdict on a whole shelter is a limited demonstration, measured on real test photos only, not a certification. Novelty is claimed only for the combination of the three roles in a shelter. Individual objects such as extinguishers exist in other datasets.
+SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each platform's own search box, so say "web search" and not "we searched every database". Queries, English: "Roboflow Universe bomb shelter fire extinguisher object detection dataset"; "Kaggle dataset air raid shelter safe room images annotated objects"; "Hugging Face dataset shelter inspection images fire extinguisher gas cylinder detection"; "Google Scholar fire safety equipment inspection object detection dataset fake extinguisher look-alike"; "shelter bunker safe room interior images dataset" (restricted to kaggle.com, huggingface.co); "shelter bunker civil defense room objects detection" (restricted to universe.roboflow.com). Hebrew: "מאגר תמונות מקלט ממ"ד מטף דאטהסט זיהוי אובייקטים". Findings: no dataset of shelter interiors with required objects, look-alikes and forbidden objects. Closest: FireSafetyNet / FireNet (Zenodo, record 13358169, Ruhr University Bochum), fire-safety equipment including extinguishers and some condition checks; Mendeley "Fire Extinguisher" (bzhmmfymsb); several Roboflow Universe extinguisher projects (e.g. ltcoe, fireextinguisher/ifc-fire-extinguishers); CylinDeRS, gas-cylinder benchmark (Sensors 2025, 25(4):1016); MIT SUN database, indoor "bomb shelter" scene category, about 11 images (scene labels, not our objects); Kaggle MIT Indoor Scenes and House Rooms (no shelters); Roboflow "bunker" sets are outdoor or satellite. The Hebrew query returned only general object-detection pages. Still to do by hand: search inside Roboflow Universe, Kaggle and Hugging Face directly with "shelter", "mamad", "safe room", "fake extinguisher", "dummy extinguisher", and Google Dataset Search, then update this log. The stronger research angle is the comparison of generation methods.</aside>
     </section>
 
     <!-- 4 · classes -->
@@ -17954,7 +17955,7 @@ body.show-notes .slide.is-active .notes{display:block}
       <div class="slide-inner l-timeline">
         <header>
           <span class="eyebrow" data-anim="fade">Pipeline</span>
-          <h2 class="headline" data-anim="rise" data-delay="140">From attribute list to verdict in five steps</h2>
+          <h2 class="headline" data-anim="rise" data-delay="140">From attribute list to detections in five steps</h2>
         </header>
         <ol style="--steps:5" data-stagger="130" data-delay="280">
           <li class="step" data-anim="pop">
