@@ -17866,7 +17866,7 @@ body.show-notes .slide.is-active .notes{display:block}
         <article class="card" data-anim="rise">
           <span class="icon-tile"><i class="ph-duotone ph-clipboard-text"></i></span>
           <h3 class="subhead">How it is done today</h3>
-          <p class="body">A person walks the shelter against a written checklist. Slow and uneven.</p>
+          <p class="body">A Home Front Command representative is required to visit the shelter, inspect it, and approve it according to a variety of criteria.</p>
         </article>
       </div>
       <aside class="notes">Checklist source: the Home Front Command maintenance page for shared and public shelters. It is not a closed equipment list and does not cover the in-apartment safe room. Do not quote numbers about shelters unless a source is added.</aside>
@@ -17880,15 +17880,14 @@ body.show-notes .slide.is-active .notes{display:block}
           <h2 class="headline" data-anim="rise" data-delay="110">One photo in, visible objects out</h2>
         </header>
         <div data-anim="lead" data-delay="260">
-          <p class="body">Detect 10 object classes visible in a shelter photo. We check visible components, not certify a shelter.</p>
+          <p class="body">Detect visible objects in a shelter photo. NOTE: We check visible components, not certify a shelter.</p>
           <ul class="bullet-list" style="margin-block-start:22px">
-            <li>A simple demo verdict: a shelter passes only if every required object is found and no forbidden object is found</li>
+            <li>Verdict: a shelter passes only if every required object is found and no forbidden object is found</li>
             <li>Innovative: no dataset we found combines required, look-alike and forbidden objects</li>
             <li>Hypothesis: generated data outperforms classical augmentation.</li>
           </ul>
-          <p class="caption" style="margin-block-start:14px">Search log (12 Nov 2026, EN + HE; Roboflow, Kaggle, Hugging Face, Zenodo, Mendeley, papers): only extinguisher sets (FireSafetyNet), gas cylinders (CylinDeRS) and tiny SUN "bomb shelter" scenes. No shelter set with look-alikes.</p>
         </div>
-        <figure class="illus" data-anim="trail" data-delay="400"><video src="shelter_explainer.mp4" autoplay muted loop playsinline preload="auto" aria-label="Animated illustration: a shelter is cut open, required objects, a lookalike and a gas cylinder appear, the detector boxes each one, and a red cross marks the shelter invalid"></video><figcaption class="caption">Photo in, boxes and class names, then a demo rule: here a gas cylinder would mark the shelter invalid.</figcaption></figure>
+        <figure class="illus" data-anim="trail" data-delay="400"><video src="shelter_explainer.mp4" autoplay muted loop playsinline preload="auto" aria-label="Animated illustration: a shelter is cut open, required objects, a lookalike and a gas cylinder appear, the detector boxes each one, and a red cross marks the shelter invalid"></video></figure>
 <script>document.addEventListener("slide:enter",function(e){e.target.querySelectorAll("video").forEach(function(v){v.currentTime=0;var p=v.play();if(p&&p.catch)p.catch(function(){});});});</script>
       </div>
       <aside class="notes">Input: one image. Output: a box and a class name for each object. Say the scope out loud: the task is checking visible components in the photo. The verdict on a whole shelter is a limited demonstration, measured on real test photos only, not a certification. Novelty is claimed only for the combination of the three roles in a shelter. Individual objects such as extinguishers exist in other datasets.
@@ -17900,7 +17899,7 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
       <div class="slide-inner l-grid one-row" style="--cols:3; --rows:1" data-stagger="120" data-delay="240">
         <header>
           <span class="eyebrow" data-anim="fade">The objects</span>
-          <h2 class="headline" data-anim="rise" data-delay="100">Ten kinds of objects in three groups</h2>
+          <h2 class="headline" data-anim="rise" data-delay="100">10 kinds of objects in 3 groups</h2>
         </header>
         <article class="card" data-anim="rise">
           <span class="icon-tile"><i class="ph-duotone ph-check-circle"></i></span>
@@ -17932,7 +17931,7 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
           </ul>
           <p class="caption">Any one makes the shelter invalid.</p>
         </article>
-        <p class="caption legend" data-anim="fade">Source for the object list: [PLACEHOLDER]</p>
+        <p class="caption legend" data-anim="fade">Source for the object list: Homefront Command Site https://www.oref.org.il/heb/articles/the-protected-space/main/1507</p>
       </div>
       <aside class="notes">This is the domain-expertise slide. Each class has a row in Data/objects_table.csv with appearance, context, size range, how to generate it, and a source. Be upfront: extinguisher and water are our choice. A gas cylinder anywhere in the image counts, we do not measure the three-metre distance. If Stable Diffusion cannot draw a believable Hebrew sign, two classes drop and eight remain.</aside>
     </section>
@@ -17955,20 +17954,19 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
       <div class="slide-inner l-timeline">
         <header>
           <span class="eyebrow" data-anim="fade">Pipeline</span>
-          <h2 class="headline" data-anim="rise" data-delay="140">From attribute list to detections in five steps</h2>
+          <h2 class="headline" data-anim="rise" data-delay="140">Workflow in 5 steps</h2>
         </header>
         <ol style="--steps:5" data-stagger="130" data-delay="280">
           <li class="step" data-anim="pop">
             <span class="step-num">01</span>
             <h3 class="subhead">Describe</h3>
-            <p class="body">We write a list of shelter types, lighting, clutter and object variants.</p>
-            <p class="caption">A scene list</p>
+            <p class="body">We write different prompts (shelter types, lighting, clutter, object variants...) so the generated images don't all look identical.</p>
           </li>
           <li class="step" data-anim="pop">
             <span class="step-num">02</span>
             <h3 class="subhead">Collect</h3>
             <p class="body">100 to 150 photos from the web. We draw the boxes around objects by hand.</p>
-            <p class="caption">Roboflow or CVAT</p>
+            <p class="caption">Roboflow/CVAT/Grounding-DINO</p>
           </li>
           <li class="step" data-anim="pop">
             <span class="step-num">03</span>
@@ -17980,12 +17978,11 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
             <span class="step-num">04</span>
             <h3 class="subhead">Verify</h3>
             <p class="body">Filter bad images. Check quality by eye.</p>
-            <p class="caption">Reliability report</p>
           </li>
           <li class="step" data-anim="pop">
             <span class="step-num">05</span>
             <h3 class="subhead">Tune and test</h3>
-            <p class="body">Train 3 object-detection models on 5 different mixes of data. Score all of them on real test photos.</p>
+            <p class="body">Lightly retrain 3 ready-made object-detection models on 5 different mixes of data. Score all of them on real test photos.</p>
             <p class="caption">T4 GPU</p>
           </li>
         </ol>
@@ -18032,7 +18029,7 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
                 <th scope="row">Real photos</th>
                 <td>Web, boxes by hand</td>
                 <td class="ltr">100–150</td>
-                <td>Tune 80%, test 20%</td>
+                <td>Train 80%, test 20%</td>
               </tr>
               <tr data-anim="lead">
                 <th scope="row">Added objects</th>
@@ -18050,7 +18047,7 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
                 <th scope="row">Classical augmentation</th>
                 <td>Dark, blur, noise, bright</td>
                 <td>Same count as Method B</td>
-                <td>Training (baseline run)</td>
+                <td>Training</td>
               </tr>
             </tbody>
           </table>
@@ -18065,15 +18062,14 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
       <div class="slide-inner l-list">
         <header>
           <span class="eyebrow" data-anim="fade">Models and experiment</span>
-          <h2 class="headline" data-anim="rise" data-delay="110">Three detectors, five modes</h2>
+          <h2 class="headline" data-anim="rise" data-delay="110">Three detectors, five setups</h2>
           <hr class="divider is-accent" data-anim="mask" data-delay="220">
         </header>
         <ul class="bullet-list" data-stagger="80" data-delay="280">
-          <li data-anim="lead">Three object-detection models: RT-DETR (Transformer-based), Faster R-CNN (CNN-based), and a third still to be chosen</li>
-          <li data-anim="lead">Five setups: real photos only; plus AI-added objects; plus AI-changed conditions; plus both; plus simple edits (no AI)</li>
-          <li data-anim="lead">Setups with extra images get matching numbers, so a gain cannot come from simply having more data</li>
-          <li data-anim="lead">Same training settings in every run. 15 runs in total (3 models × 5 setups) on one T4 GPU</li>
-          <li data-anim="lead">A ready-made model (Grounding-DINO) used as-is, with no training, as the lowest bar to beat</li>
+          <li data-anim="lead">Three ready-made object-detection models: RT-DETR (Transformer-based), Faster R-CNN (CNN-based), and a third still to be chosen</li>
+          <li data-anim="lead">Five setups as shown in previous slide</li>
+          <li data-anim="lead">Setups get the same amount of images, so a gain cannot come from simply having more data</li>
+          <li data-anim="lead">Each model is lightly retrained (fine-tuned) with the same settings every time. 15 runs in total (3 models × 5 setups) on one T4 GPU</li>
         </ul>
       </div>
       <aside class="notes">15 fine-tuning runs on a T4 GPU. Everything except the data is identical across runs. The open decisions: the third detector, how to load Faster R-CNN through the Hugging Face tools, ControlNet versus GLIGEN, and which SD model. Grounding-DINO is not one of the three models; it answers the course's fine-tuned versus off-the-shelf comparison. Mode 5 answers the question: why generative AI at all, when darkness and blur can be done classically?</aside>
