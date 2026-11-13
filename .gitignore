@@ -12,3 +12,6 @@ data/
 __pycache__/
 .ipynb_checkpoints/
 .env
+
+# Others
+md_files/
