@@ -300,6 +300,10 @@ html:not(.js) .nav{display:none}
 .l-metrics{display:grid; grid-template-rows:auto 1fr auto; gap:30px}
 .l-metrics > ul{display:grid; grid-template-columns:repeat(4,1fr); gap:20px; align-content:center}
 .l-metrics .stat{font-size:46px}
+.l-metrics.is-text{grid-template-rows:auto 1fr}
+.l-metrics.is-text > ul{grid-template-columns:repeat(2,1fr)}
+.l-metrics.is-text .metric-title{font-size:26px; font-weight:700; line-height:1.25; color:var(--fg)}
+.l-metrics.is-text .stat-label{font-size:19px; line-height:1.5}
 
 /* 8 · l-bignum */
 .l-bignum{display:grid; grid-template-columns:auto 1fr; align-items:center; gap:60px}
@@ -572,6 +576,8 @@ html:not(.js) .nav{display:none}
   font-size:20px; line-height:1.7;
 }
 .table-wrap thead th{font-size:18px; font-weight:700; color:var(--fg-faint); background:var(--bg-elev-2)}
+.l-table.is-compact .table-wrap th,.l-table.is-compact .table-wrap td{padding:11px 20px; font-size:19px; line-height:1.45}
+.l-table.is-compact .table-wrap thead th{font-size:17px}
 .table-wrap tbody td{color:var(--fg-muted)}
 .table-wrap tbody th{font-weight:700; color:var(--fg)}
 .table-wrap tbody tr:last-child th,.table-wrap tbody tr:last-child td{border-block-end:0}
@@ -17975,7 +17981,7 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
           <li class="step" data-anim="pop">
             <span class="step-num">03</span>
             <h3 class="subhead">Generate</h3>
-            <p class="body">A adds objects. B changes capture conditions.</p>
+            <p class="body">Two ways: paint a missing object into a photo, or change how the photo looks.</p>
             <p class="caption">Stable Diffusion</p>
           </li>
           <li class="step" data-anim="pop">
@@ -18008,10 +18014,10 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
 
     <!-- 7 · data -->
     <section class="slide" data-layout="table" aria-roledescription="slide" aria-hidden="true">
-      <div class="slide-inner l-table">
+      <div class="slide-inner l-table is-compact">
         <header>
           <span class="eyebrow" data-anim="fade">Data</span>
-          <h2 class="headline" data-anim="rise" data-delay="110">Real photos for testing, synthetic for training</h2>
+          <h2 class="headline" data-anim="rise" data-delay="110">Synthetic photos for training, real photos for testing</h2>
         </header>
         <div class="table-wrap" data-anim="fade" data-delay="240">
           <table>
@@ -18033,25 +18039,24 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
               <tr data-anim="lead">
                 <th scope="row">Added objects</th>
                 <td>Stable Diffusion paints in a missing object</td>
-                <td>At least 100 per object type, together with the row below</td>
-                <td>Training only</td>
+                <td>At least 100 per object type</td>
+                <td>Training</td>
               </tr>
               <tr data-anim="lead">
-                <th scope="row">Method B</th>
-                <td>Capture-condition edits</td>
+                <th scope="row">Changed conditions</th>
+                <td>Same photo redrawn by AI: dark, side light, glare, blur, noise, new background</td>
                 <td>6 conditions</td>
-                <td>Training only</td>
+                <td>Training</td>
               </tr>
               <tr class="is-feature" data-anim="lead">
-                <th scope="row">Classical augmentation</th>
-                <td>Dark, blur, noise, bright</td>
-                <td>Same count as Method B</td>
+                <th scope="row">Augmentation (no AI)</th>
+                <td>Standard brightness, blur and noise changes</td>
+                <td>6 conditions</td>
                 <td>Training</td>
               </tr>
             </tbody>
           </table>
         </div>
-        <p class="caption" data-anim="fade" data-delay="720">We hold back 10% of the training photos to know when to stop training. Test photos are always real.</p>
       </div>
       <aside class="notes">The test set is small: 20 to 30 real photos, at least 10 with a look-alike and 5 with a forbidden object. Say this out loud, then show the risks slide. Web photos stay in Google Drive, not in GitHub (copyright). Synthetic counts follow an equal-size rule: mode 4 gets as many synthetic images as mode 2, mode 5 as many augmented images as mode 3, so a gain cannot come from more data.</aside>
     </section>
@@ -18068,7 +18073,7 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
           <li data-anim="lead">Three ready-made object-detection models: RT-DETR (Transformer-based), Faster R-CNN (CNN-based), and a third still to be chosen</li>
           <li data-anim="lead">Five setups as shown in previous slide</li>
           <li data-anim="lead">Setups get the same amount of images, so a gain cannot come from simply having more data</li>
-          <li data-anim="lead">Each model is lightly retrained (fine-tuned) with the same settings every time. 15 runs in total (3 models × 5 setups) on one T4 GPU</li>
+          <li data-anim="lead">Each model is finetuned with the same settings every time. 15 runs in total (3 models × 5 setups) on one T4 GPU</li>
         </ul>
       </div>
       <aside class="notes">15 fine-tuning runs on a T4 GPU. Everything except the data is identical across runs. The open decisions: the third detector, how to load Faster R-CNN through the Hugging Face tools, ControlNet versus GLIGEN, and which SD model. Grounding-DINO is not one of the three models; it answers the course's fine-tuned versus off-the-shelf comparison. Mode 5 answers the question: why generative AI at all, when darkness and blur can be done classically?</aside>
@@ -18076,30 +18081,25 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
 
     <!-- 9 · KPIs -->
     <section class="slide" data-layout="metrics" aria-roledescription="slide" aria-hidden="true">
-      <div class="slide-inner l-metrics">
+      <div class="slide-inner l-metrics is-text">
         <header>
-          <span class="eyebrow" data-anim="fade">Target KPIs</span>
-          <h2 class="headline" data-anim="rise" data-delay="120">Four targets, measured on real photos only</h2>
+          <span class="eyebrow" data-anim="fade">Metrics</span>
+          <h2 class="headline" data-anim="rise" data-delay="120">How we measure success</h2>
         </header>
         <ul data-stagger="120" data-delay="240">
           <li class="metric" data-anim="pop">
-            <span class="stat ltr" data-anim="count" data-delay="400" data-count-to="3" data-count-prefix="+" data-count-suffix=" pp">+3 pp</span>
-            <span class="stat-label">Overall detection score (mAP@50) vs. training on real photos only</span>
+            <h3 class="metric-title">Real test photos</h3>
+            <span class="stat-label">We test on real photos only. The correct boxes are drawn by hand. The model never sees these photos in training, and no generated image is used here.</span>
           </li>
           <li class="metric" data-anim="pop">
-            <span class="stat ltr" data-anim="count" data-delay="520" data-count-to="5" data-count-prefix="+" data-count-suffix=" pp">+5 pp</span>
-            <span class="stat-label">Share of small objects found</span>
+            <h3 class="metric-title">Generated images</h3>
+            <span class="stat-label">We check each step: boxes sit on the right object, a fake looks like the real object with one visible defect, and people try to tell real from generated. Bad images are removed. We also compare generated and real photos with two standard image-quality scores (FID, IS).</span>
           </li>
           <li class="metric" data-anim="pop">
-            <span class="stat ltr" data-anim="count" data-delay="640" data-count-to="5" data-count-prefix="+" data-count-suffix=" pp">+5 pp</span>
-            <span class="stat-label">Correct detections in photo conditions not seen in training, like very dark</span>
-          </li>
-          <li class="metric" data-anim="pop">
-            <span class="stat ltr" data-anim="count" data-delay="760" data-count-to="5" data-count-prefix="−" data-count-suffix=" pp">−5 pp</span>
-            <span class="stat-label">Fakes wrongly accepted as real (target to be confirmed)</span>
+            <h3 class="metric-title">Detection quality</h3>
+            <span class="stat-label">How well the model’s boxes match our hand-drawn ones (mAP@50). Also: small objects found, fakes wrongly accepted as real, forbidden objects missed, and how often the pass/fail verdict is right.</span>
           </li>
         </ul>
-        <p class="caption" data-anim="fade" data-delay="880">pp = percentage points (60% to 63% is +3 pp). We also report, without targets: forbidden objects missed, how often the pass/fail verdict is right (F1), and two image-quality scores (FID, IS).</p>
       </div>
       <aside class="notes">Targets are relative to fine-tuning on real photos only, on the real test set. Also state which method helped more (A or B), and that the trend must repeat in at least two models. Honest caveat: with 20 to 30 test photos, 3 points can be noise, and the PRD does not plan confidence intervals. IS is computed against ImageNet classes and FID needs far more images than we have real ones, so both are reported but are not proof of reliability. The human test (20 real, 20 synthetic, mixed) and the filter report are the real evidence.</aside>
     </section>
