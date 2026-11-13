@@ -17985,7 +17985,7 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
           <li class="step" data-anim="pop">
             <span class="step-num">05</span>
             <h3 class="subhead">Tune and test</h3>
-            <p class="body">Train 3 object-detection models on 5 different mixes of data. Score all of them on real test photos.</p>
+            <p class="body">Lightly retrain 3 ready-made object-detection models on 5 different mixes of data. Score all of them on real test photos.</p>
             <p class="caption">T4 GPU</p>
           </li>
         </ol>
@@ -18069,10 +18069,10 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
           <hr class="divider is-accent" data-anim="mask" data-delay="220">
         </header>
         <ul class="bullet-list" data-stagger="80" data-delay="280">
-          <li data-anim="lead">Three object-detection models: RT-DETR (Transformer-based), Faster R-CNN (CNN-based), and a third still to be chosen</li>
+          <li data-anim="lead">Three ready-made object-detection models: RT-DETR (Transformer-based), Faster R-CNN (CNN-based), and a third still to be chosen</li>
           <li data-anim="lead">Five setups: real photos only; plus AI-added objects; plus AI-changed conditions; plus both; plus simple edits (no AI)</li>
           <li data-anim="lead">Setups with extra images get matching numbers, so a gain cannot come from simply having more data</li>
-          <li data-anim="lead">Same training settings in every run. 15 runs in total (3 models × 5 setups) on one T4 GPU</li>
+          <li data-anim="lead">Each model is lightly retrained (fine-tuned) with the same settings every time. 15 runs in total (3 models × 5 setups) on one T4 GPU</li>
           <li data-anim="lead">A ready-made model (Grounding-DINO) used as-is, with no training, as the lowest bar to beat</li>
         </ul>
       </div>
