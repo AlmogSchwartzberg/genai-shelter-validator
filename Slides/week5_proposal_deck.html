@@ -17997,10 +17997,10 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
     <!-- 6 · feasibility -->
     <section class="slide" data-layout="image" aria-roledescription="slide" aria-hidden="true">
       <div class="slide-inner l-image is-wide">
-        <figure class="tri" data-anim="zoom" role="img" aria-label="Feasibility samples: extinguisher vs. fake extinguisher, vent with vs. without cover, Hebrew sign">
+        <figure class="tri" data-anim="zoom" role="img" aria-label="Feasibility samples: extinguisher vs. fake extinguisher, vent with vs. without cover, shelter sign vs. wrong sign">
           <div class="tile has-img"><img src="feasibility_extinguisher.webp" alt="Top: real extinguisher with hose and pressure gauge. Bottom: fake, a red bottle with no hose or gauge, in the same wall bracket."><span>Extinguisher vs. fake</span></div>
           <div class="tile has-img"><img src="feasibility_vent.webp" alt="Generated with Stable Diffusion XL. Top: a shelter ventilation opening closed by a square panel with an exhaust fan. Bottom: the same wall with the panel missing, an open square opening."><span>Vent with vs. without cover</span></div>
-          <div class="tile"><i class="ph-duotone ph-image"></i><span>Hebrew sign <span lang="he" dir="rtl">מקלט</span></span><small>sample to add</small></div>
+          <div class="tile has-img"><img src="feasibility_sign.webp" alt="Top: a yellow sign reading מקלט (shelter) on a stone wall. Bottom: the same wall with a wrong sign, different Hebrew text followed by stray Latin letters."><span>Shelter sign vs. wrong sign</span></div>
         </figure>
       </div>
       <aside class="notes">Each tile is a pair: the valid object on top and its look-alike below, on the same wall. Extinguisher: the fake is a red bottle with no hose and no pressure gauge, in the same bracket. Vent: generated locally with Stable Diffusion XL, modelled on public-shelter vents, a square panel with an exhaust fan high on the wall. There is no ladder under it on purpose: the State Comptroller report (p. 44) lists a fan in an escape hatch as a defect, so the valid case must read as a vent, not a hatch. First the wall with the panel, then inpainting replaces only the panel with an open opening, so the wall is identical and the box is known in advance. That is method A, and the label comes for free. The hard part is that the defect must stay visible at 512 by 512 pixels. The Hebrew sign is still to test, because Stable Diffusion does not reliably render Hebrew text.</aside>
