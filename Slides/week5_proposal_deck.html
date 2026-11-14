@@ -17993,7 +17993,7 @@ body.show-notes .slide.is-active .notes{display:block}
         <article class="card" data-anim="rise">
           <span class="icon-tile"><i class="ph-duotone ph-shield-check"></i></span>
           <h3 class="subhead">Why it matters</h3>
-          <p class="body">A shelter only protects people if it is ready when the alarm sounds. Users: maintenance staff or inspectors.</p>
+          <p class="body">A shelter only protects people if it is ready when the alarm sounds.</p>
         </article>
         <article class="card" data-anim="rise">
           <span class="icon-tile"><i class="ph-duotone ph-warning"></i></span>
@@ -18003,7 +18003,7 @@ body.show-notes .slide.is-active .notes{display:block}
         <article class="card" data-anim="rise">
           <span class="icon-tile"><i class="ph-duotone ph-clipboard-text"></i></span>
           <h3 class="subhead">How it is done today</h3>
-          <p class="body">Checked in person against the Home Front Command checklist. Our tool supports that check, it does not replace it.</p>
+          <p class="body">A Home Front Command representative is required to visit the shelter, inspect it, and approve it according to a variety of criteria.</p>
         </article>
       </div>
       <aside class="notes">Checklist source: the Home Front Command maintenance page for shared and public shelters. It is not a closed equipment list and does not cover the in-apartment safe room. Do not quote numbers about shelters unless a source is added.</aside>
@@ -18020,7 +18020,6 @@ body.show-notes .slide.is-active .notes{display:block}
           <p class="body">Detect and box visible objects from 10 classes in one shelter photo. We check what is visible; we do not certify a shelter.</p>
           <ul class="bullet-list" style="margin-block-start:22px">
             <li>Contribution: does generated data beat real-only training and classical augmentation on real photos?</li>
-            <li>Gap: FireSafetyNet, CylinDeRS and SUN cover single objects or scenes, not all three roles</li>
             <li>Verdict: exploratory only. An object out of frame is "not observed", not a failure</li>
           </ul>
         </div>
@@ -18042,11 +18041,11 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
           <span class="icon-tile"><i class="ph-duotone ph-check-circle"></i></span>
           <h3 class="subhead">Required (5)</h3>
           <ul class="role-list">
-            <li>Fire extinguisher *</li>
+            <li>Fire extinguisher</li>
             <li>Vent opening with cover</li>
             <li>“Shelter” sign</li>
             <li>Light fixture</li>
-            <li>Water, any container *</li>
+            <li>Drinking water, any container</li>
           </ul>
         </article>
         <article class="card" data-anim="rise">
@@ -18068,7 +18067,7 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
           </ul>
           <p class="caption">Any one makes the shelter invalid.</p>
         </article>
-        <p class="caption legend" data-anim="fade">Inspired by Home Front Command guidance (oref.org.il, article 1507), simplified for research; not a legal checklist. * Our choice. Look-alikes and forbidden rules are project-defined. Class definitions: Data/objects_table.csv</p>
+        <p class="caption legend" data-anim="fade">Source for the object list: Homefront Command Site https://www.oref.org.il/heb/articles/the-protected-space/main/1507</p>
       </div>
       <aside class="notes">This is the domain-expertise slide. Each class has a row in Data/objects_table.csv with appearance, context, size range, how to generate it, and a source. Be upfront: extinguisher and water are our choice. A gas cylinder anywhere in the image counts, we do not measure the three-metre distance. If Stable Diffusion cannot draw a believable Hebrew sign, two classes drop and eight remain.</aside>
     </section>
@@ -18081,7 +18080,7 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
           <h2 class="headline" data-anim="rise" data-delay="100">The five required objects, in one room</h2>
         </header>
         <div class="shelter-3d-wrapper" data-anim="fade" data-delay="240"></div>
-        <p class="caption" data-anim="fade" data-delay="400">Concept illustration only, not used for training or testing</p>
+        <p class="caption" data-anim="fade" data-delay="400">3D illustration</p>
       </div>
       <aside class="notes">Use this slide to explain what the detector has to find in a single photo: the sign, the vent with its cover, the extinguisher, the light fixture and the drinking water. Click a number or a button to fly to that object. This is a procedural model made only for the talk. It is not the generated data and is never used for training or testing. Say that out loud so nobody mixes it up with method A.</aside>
     </section>
@@ -18119,7 +18118,7 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
           <li class="step" data-anim="pop">
             <span class="step-num">05</span>
             <h3 class="subhead">Tune and test</h3>
-            <p class="body">Fine-tune detectors on 5 data mixes. Score all of them on the locked real test photos.</p>
+            <p class="body">Finetune 3 object-detection models on 5 different mixes of data. Score all of them on real test photos.</p>
             <p class="caption">T4 GPU</p>
           </li>
         </ol>
@@ -18161,7 +18160,7 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
                 <th scope="row">Real photos</th>
                 <td>Web, boxes by hand</td>
                 <td class="ltr">100–150</td>
-                <td>Split by source: train 80%, locked test 20%</td>
+                <td>Train 80%, test 20%</td>
               </tr>
               <tr data-anim="lead">
                 <th scope="row">Added objects</th>
@@ -18186,7 +18185,7 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
         </div>
         <p class="caption" data-anim="fade" data-delay="480">Synthetic images come only from training photos, so no test photo leaks into training. Test: 20–30 real photos, at least 10 with a look-alike and 5 with a forbidden object, results reported per class with counts. Source and licence recorded for every web photo.</p>
       </div>
-      <aside class="notes">The test set is small: 20 to 30 real photos, at least 10 with a look-alike and 5 with a forbidden object. Say this out loud, then show the risks slide. Web photos stay in Google Drive, not in GitHub, and we record the source and licence of each one; keeping them out of GitHub does not by itself give permission to reuse them. Photos are grouped by source and deduplicated, and the split happens before any generation. Synthetic counts follow an equal-size rule: mode 4 gets as many synthetic images as mode 2, mode 5 as many augmented images as mode 3, so a gain cannot come from more data.</aside>
+      <aside class="notes">The test set is small: 20 to 30 real photos, at least 10 with a look-alike and 5 with a forbidden object. Say this out loud, then show the risks slide. Web photos stay in Google Drive, not in GitHub (copyright). Synthetic counts follow an equal-size rule: mode 4 gets as many synthetic images as mode 2, mode 5 as many augmented images as mode 3, so a gain cannot come from more data.</aside>
     </section>
 
     <!-- 8 · models -->
@@ -18194,7 +18193,7 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
       <div class="slide-inner l-table is-compact">
         <header>
           <span class="eyebrow" data-anim="fade">Models and experiment</span>
-          <h2 class="headline" data-anim="rise" data-delay="110">Five data setups, plus an off-the-shelf baseline</h2>
+          <h2 class="headline" data-anim="rise" data-delay="110">Three detectors, five setups</h2>
         </header>
         <div class="table-wrap" data-anim="fade" data-delay="240">
           <table>
