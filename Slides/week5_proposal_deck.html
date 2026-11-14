@@ -17974,8 +17974,8 @@ body.show-notes .slide.is-active .notes{display:block}
     <section class="slide is-active" data-layout="title" aria-roledescription="slide">
       <div class="slide-inner l-title">
         <span class="eyebrow" data-anim="fade">Project proposal · Week 5</span>
-        <h1 class="headline is-grad" data-anim="rise" data-delay="120">Can synthetic images teach AI to check a shelter?</h1>
-        <p class="subhead" data-anim="rise" data-delay="260">GenAI Shelter Validator: required objects, look-alikes and forbidden objects, found in one photo</p>
+        <h1 class="headline is-grad" data-anim="rise" data-delay="120">Can synthetic images improve detection of shelter equipment and defects?</h1>
+        <p class="subhead" data-anim="rise" data-delay="260">GenAI Shelter Validator: required objects, look-alikes and forbidden objects, detected in real photos</p>
         <div class="divider" data-anim="mask" data-delay="380"></div>
         <p class="caption" data-anim="fade" data-delay="520">Deep Generative Models for Visual Data</p>
         <p class="caption" data-anim="fade" data-delay="520">Shai Cohen, Gavriel Agibaev, Eliad Bicher and Almog Schwartzberg</p> 
@@ -17988,22 +17988,22 @@ body.show-notes .slide.is-active .notes{display:block}
       <div class="slide-inner l-grid one-row" style="--cols:3; --rows:1" data-stagger="120" data-delay="240">
         <header>
           <span class="eyebrow" data-anim="fade">Use case</span>
-          <h2 class="headline" data-anim="rise" data-delay="100">Shelter checks are manual, and we found no image data</h2>
+          <h2 class="headline" data-anim="rise" data-delay="100">Shelter checks are manual, and we found no matching image data</h2>
         </header>
         <article class="card" data-anim="rise">
           <span class="icon-tile"><i class="ph-duotone ph-shield-check"></i></span>
           <h3 class="subhead">Why it matters</h3>
-          <p class="body">A shelter only protects people if it is ready when the alarm sounds.</p>
+          <p class="body">A shelter only protects people if it is ready when the alarm sounds. Users: maintenance staff or inspectors.</p>
         </article>
         <article class="card" data-anim="rise">
           <span class="icon-tile"><i class="ph-duotone ph-warning"></i></span>
           <h3 class="subhead">Why it is hard</h3>
-          <p class="body">We found no labelled shelter images, and a fake extinguisher can pass a quick look.</p>
+          <p class="body">Our web search found no annotated dataset covering our 10 classes, and a fake extinguisher can pass a quick look.</p>
         </article>
         <article class="card" data-anim="rise">
           <span class="icon-tile"><i class="ph-duotone ph-clipboard-text"></i></span>
           <h3 class="subhead">How it is done today</h3>
-          <p class="body">A Home Front Command representative is required to visit the shelter, inspect it, and approve it according to a variety of criteria.</p>
+          <p class="body">Checked in person against the Home Front Command checklist. Our tool supports that check, it does not replace it.</p>
         </article>
       </div>
       <aside class="notes">Checklist source: the Home Front Command maintenance page for shared and public shelters. It is not a closed equipment list and does not cover the in-apartment safe room. Do not quote numbers about shelters unless a source is added.</aside>
@@ -18017,17 +18017,17 @@ body.show-notes .slide.is-active .notes{display:block}
           <h2 class="headline" data-anim="rise" data-delay="110">One photo in, visible objects out</h2>
         </header>
         <div data-anim="lead" data-delay="260">
-          <p class="body">Detect visible objects in a shelter photo. NOTE: We check visible components, not certify a shelter.</p>
+          <p class="body">Detect and box visible objects from 10 classes in one shelter photo. We check what is visible; we do not certify a shelter.</p>
           <ul class="bullet-list" style="margin-block-start:22px">
-            <li>Verdict: a shelter passes only if every required object is found and no forbidden object is found</li>
-            <li>Innovative: no dataset we found combines required, look-alike and forbidden objects</li>
-            <li>Hypothesis: generated data outperforms classical augmentation.</li>
+            <li>Contribution: does generated data beat real-only training and classical augmentation on real photos?</li>
+            <li>Gap: FireSafetyNet, CylinDeRS and SUN cover single objects or scenes, not all three roles</li>
+            <li>Verdict: exploratory only. An object out of frame is "not observed", not a failure</li>
           </ul>
         </div>
         <figure class="illus" data-anim="trail" data-delay="400"><video src="shelter_explainer.mp4" autoplay muted loop playsinline preload="auto" aria-label="Animated illustration: a shelter is cut open, required objects, a lookalike and a gas cylinder appear, the detector boxes each one, and a red cross marks the shelter invalid"></video></figure>
 <script>document.addEventListener("slide:enter",function(e){e.target.querySelectorAll("video").forEach(function(v){v.currentTime=0;var p=v.play();if(p&&p.catch)p.catch(function(){});});});</script>
       </div>
-      <aside class="notes">Input: one image. Output: a box and a class name for each object. Say the scope out loud: the task is checking visible components in the photo. The verdict on a whole shelter is a limited demonstration, measured on real test photos only, not a certification. Novelty is claimed only for the combination of the three roles in a shelter. Individual objects such as extinguishers exist in other datasets.
+      <aside class="notes">Input: one image. Output: a box and a class name for each object. Say the scope out loud: the task is checking visible components in the photo. The verdict on a whole shelter is exploratory, measured on real test photos only, not a certification. An object that is not detected may simply be out of frame, so it is reported as not observed, never as missing from the shelter. The research contribution is the comparison of generation methods; the dataset is what makes that comparison possible. Novelty is claimed only for the combination of the three roles in a shelter. Individual objects such as extinguishers exist in other datasets.
 SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each platform's own search box, so say "web search" and not "we searched every database". Queries, English: "Roboflow Universe bomb shelter fire extinguisher object detection dataset"; "Kaggle dataset air raid shelter safe room images annotated objects"; "Hugging Face dataset shelter inspection images fire extinguisher gas cylinder detection"; "Google Scholar fire safety equipment inspection object detection dataset fake extinguisher look-alike"; "shelter bunker safe room interior images dataset" (restricted to kaggle.com, huggingface.co); "shelter bunker civil defense room objects detection" (restricted to universe.roboflow.com). Hebrew: "מאגר תמונות מקלט ממ"ד מטף דאטהסט זיהוי אובייקטים". Findings: no dataset of shelter interiors with required objects, look-alikes and forbidden objects. Closest: FireSafetyNet / FireNet (Zenodo, record 13358169, Ruhr University Bochum), fire-safety equipment including extinguishers and some condition checks; Mendeley "Fire Extinguisher" (bzhmmfymsb); several Roboflow Universe extinguisher projects (e.g. ltcoe, fireextinguisher/ifc-fire-extinguishers); CylinDeRS, gas-cylinder benchmark (Sensors 2025, 25(4):1016); MIT SUN database, indoor "bomb shelter" scene category, about 11 images (scene labels, not our objects); Kaggle MIT Indoor Scenes and House Rooms (no shelters); Roboflow "bunker" sets are outdoor or satellite. The Hebrew query returned only general object-detection pages. Still to do by hand: search inside Roboflow Universe, Kaggle and Hugging Face directly with "shelter", "mamad", "safe room", "fake extinguisher", "dummy extinguisher", and Google Dataset Search, then update this log. The stronger research angle is the comparison of generation methods.</aside>
     </section>
 
@@ -18042,11 +18042,11 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
           <span class="icon-tile"><i class="ph-duotone ph-check-circle"></i></span>
           <h3 class="subhead">Required (5)</h3>
           <ul class="role-list">
-            <li>Fire extinguisher</li>
+            <li>Fire extinguisher *</li>
             <li>Vent opening with cover</li>
             <li>“Shelter” sign</li>
             <li>Light fixture</li>
-            <li>Drinking water, any container</li>
+            <li>Water, any container *</li>
           </ul>
         </article>
         <article class="card" data-anim="rise">
@@ -18068,7 +18068,7 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
           </ul>
           <p class="caption">Any one makes the shelter invalid.</p>
         </article>
-        <p class="caption legend" data-anim="fade">Source for the object list: Homefront Command Site https://www.oref.org.il/heb/articles/the-protected-space/main/1507</p>
+        <p class="caption legend" data-anim="fade">Inspired by Home Front Command guidance (oref.org.il, article 1507), simplified for research; not a legal checklist. * Our choice. Look-alikes and forbidden rules are project-defined. Class definitions: Data/objects_table.csv</p>
       </div>
       <aside class="notes">This is the domain-expertise slide. Each class has a row in Data/objects_table.csv with appearance, context, size range, how to generate it, and a source. Be upfront: extinguisher and water are our choice. A gas cylinder anywhere in the image counts, we do not measure the three-metre distance. If Stable Diffusion cannot draw a believable Hebrew sign, two classes drop and eight remain.</aside>
     </section>
@@ -18081,7 +18081,7 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
           <h2 class="headline" data-anim="rise" data-delay="100">The five required objects, in one room</h2>
         </header>
         <div class="shelter-3d-wrapper" data-anim="fade" data-delay="240"></div>
-        <p class="caption" data-anim="fade" data-delay="400">3D illustration</p>
+        <p class="caption" data-anim="fade" data-delay="400">Concept illustration only, not used for training or testing</p>
       </div>
       <aside class="notes">Use this slide to explain what the detector has to find in a single photo: the sign, the vent with its cover, the extinguisher, the light fixture and the drinking water. Click a number or a button to fly to that object. This is a procedural model made only for the talk. It is not the generated data and is never used for training or testing. Say that out loud so nobody mixes it up with method A.</aside>
     </section>
@@ -18102,41 +18102,41 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
           <li class="step" data-anim="pop">
             <span class="step-num">02</span>
             <h3 class="subhead">Collect</h3>
-            <p class="body">100 to 150 photos from the web. We draw the boxes around objects by hand.</p>
+            <p class="body">100 to 150 web photos, boxes drawn by hand. Split by source into train and test before generating anything.</p>
             <p class="caption">Roboflow/CVAT/Grounding-DINO</p>
           </li>
           <li class="step" data-anim="pop">
             <span class="step-num">03</span>
             <h3 class="subhead">Generate</h3>
-            <p class="body">Two ways: paint a missing object into a photo, or change how the photo looks.</p>
-            <p class="caption">Stable Diffusion</p>
+            <p class="body">A: paint an object, look-alike or forbidden object into a training photo. B: change light, blur or background.</p>
+            <p class="caption">SD inpainting, ControlNet or GLIGEN</p>
           </li>
           <li class="step" data-anim="pop">
             <span class="step-num">04</span>
             <h3 class="subhead">Verify</h3>
-            <p class="body">Filter bad images. Check quality by eye.</p>
+            <p class="body">The mask only proposes a box. We check every label and reject images where the object, defect or box is wrong.</p>
           </li>
           <li class="step" data-anim="pop">
             <span class="step-num">05</span>
             <h3 class="subhead">Tune and test</h3>
-            <p class="body">Finetune 3 object-detection models on 5 different mixes of data. Score all of them on real test photos.</p>
+            <p class="body">Fine-tune detectors on 5 data mixes. Score all of them on the locked real test photos.</p>
             <p class="caption">T4 GPU</p>
           </li>
         </ol>
       </div>
-      <aside class="notes">Method A: Stable Diffusion inpainting with ControlNet or GLIGEN places an object, a look-alike or a forbidden object inside a box, so the label comes for free. Method B changes how the photo was taken: dark, side light, glare, blur, noise, other background. The box stays put. The model choice for generation (SD 1.5 inpainting is the candidate) is still open.</aside>
+      <aside class="notes">Method A: Stable Diffusion inpainting with ControlNet or GLIGEN places an object, a look-alike or a forbidden object inside a box. The mask proposes the label, and every generated label is checked by hand. Method B changes how the photo was taken: dark, side light, glare, blur, noise, other background. The box should stay put, so we check it after the change and reject images where it no longer fits. Generation only ever starts from training photos. The model choice for generation (SD 1.5 inpainting is the candidate) is still open.</aside>
     </section>
 
     <!-- 6 · feasibility -->
     <section class="slide" data-layout="image" aria-roledescription="slide" aria-hidden="true">
       <div class="slide-inner l-image is-wide">
         <figure class="tri" data-anim="zoom" role="img" aria-label="Feasibility samples: extinguisher vs. fake extinguisher, vent with vs. without cover, shelter sign vs. wrong sign">
-          <div class="tile has-img"><img src="feasibility_extinguisher.webp" alt="Top: real extinguisher with hose and pressure gauge. Bottom: fake, a red bottle with no hose or gauge, in the same wall bracket."><span>Extinguisher vs. fake</span></div>
-          <div class="tile has-img"><img src="feasibility_vent.webp" alt="Generated with Stable Diffusion XL. Top: a shelter ventilation opening closed by a square panel with an exhaust fan. Bottom: the same wall with the panel missing, an open square opening."><span>Vent with vs. without cover</span></div>
-          <div class="tile has-img"><img src="feasibility_sign.webp" alt="Top: a yellow sign reading מקלט (shelter) on a stone wall. Bottom: the same wall with a wrong sign, different Hebrew text followed by stray Latin letters."><span>Shelter sign vs. wrong sign</span></div>
+          <div class="tile has-img"><img src="feasibility_extinguisher.webp" alt="Top: real extinguisher with hose and pressure gauge. Bottom: fake, a red bottle with no hose or gauge, in the same wall bracket."><span>Extinguisher vs. fake · feasible</span></div>
+          <div class="tile has-img"><img src="feasibility_vent.webp" alt="Generated with Stable Diffusion XL. Top: a shelter ventilation opening closed by a square panel with an exhaust fan. Bottom: the same wall with the panel missing, an open square opening."><span>Vent with vs. without cover · feasible</span></div>
+          <div class="tile has-img"><img src="feasibility_sign.webp" alt="Top: a yellow sign reading מקלט (shelter) on a stone wall. Bottom: the same wall with a wrong sign, different Hebrew text followed by stray Latin letters."><span>Shelter sign vs. wrong sign · Hebrew text not yet validated</span></div>
         </figure>
       </div>
-      <aside class="notes">Each tile is a pair: the valid object on top and its look-alike below, on the same wall. Extinguisher: the fake is a red bottle with no hose and no pressure gauge, in the same bracket. Vent: generated locally with Stable Diffusion XL, modelled on public-shelter vents, a square panel with an exhaust fan high on the wall. There is no ladder under it on purpose: the State Comptroller report (p. 44) lists a fan in an escape hatch as a defect, so the valid case must read as a vent, not a hatch. First the wall with the panel, then inpainting replaces only the panel with an open opening, so the wall is identical and the box is known in advance. That is method A, and the label comes for free. The hard part is that the defect must stay visible at 512 by 512 pixels. The Hebrew sign is still to test, because Stable Diffusion does not reliably render Hebrew text.</aside>
+      <aside class="notes">Each tile is a pair: the valid object on top and its look-alike below, on the same wall. Extinguisher: the fake is a red bottle with no hose and no pressure gauge, in the same bracket. Vent: generated locally with Stable Diffusion XL, modelled on public-shelter vents, a square panel with an exhaust fan high on the wall. There is no ladder under it on purpose: the State Comptroller report (p. 44) lists a fan in an escape hatch as a defect, so the valid case must read as a vent, not a hatch. First the wall with the panel, then inpainting replaces only the panel with an open opening, so the wall is identical and the box is proposed in advance. That is method A; the box is still checked by hand. The hard part is that the defect must stay visible at 512 by 512 pixels. The Hebrew sign is still to test, because Stable Diffusion does not reliably render Hebrew text; the slide marks it as not yet validated. Next check: resize each sample to the detector input size and confirm the defect is still visible.</aside>
     </section>
 
     <!-- 7 · data -->
@@ -18161,94 +18161,123 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
                 <th scope="row">Real photos</th>
                 <td>Web, boxes by hand</td>
                 <td class="ltr">100–150</td>
-                <td>Train 80%, test 20%</td>
+                <td>Split by source: train 80%, locked test 20%</td>
               </tr>
               <tr data-anim="lead">
                 <th scope="row">Added objects</th>
-                <td>Stable Diffusion paints in a missing object</td>
+                <td>Stable Diffusion paints an object into a training photo</td>
                 <td>At least 100 per object type</td>
                 <td>Training</td>
               </tr>
               <tr data-anim="lead">
                 <th scope="row">Changed conditions</th>
-                <td>Same photo redrawn by AI: dark, side light, glare, blur, noise, new background</td>
+                <td>Training photo redrawn by AI: dark, side light, glare, blur, noise, new background</td>
                 <td>6 conditions</td>
                 <td>Training</td>
               </tr>
               <tr class="is-feature" data-anim="lead">
                 <th scope="row">Augmentation (no AI)</th>
                 <td>Standard brightness, blur and noise changes</td>
-                <td>6 conditions</td>
+                <td>Same count as changed conditions</td>
                 <td>Training</td>
               </tr>
             </tbody>
           </table>
         </div>
+        <p class="caption" data-anim="fade" data-delay="480">Synthetic images come only from training photos, so no test photo leaks into training. Test: 20–30 real photos, at least 10 with a look-alike and 5 with a forbidden object, results reported per class with counts. Source and licence recorded for every web photo.</p>
       </div>
-      <aside class="notes">The test set is small: 20 to 30 real photos, at least 10 with a look-alike and 5 with a forbidden object. Say this out loud, then show the risks slide. Web photos stay in Google Drive, not in GitHub (copyright). Synthetic counts follow an equal-size rule: mode 4 gets as many synthetic images as mode 2, mode 5 as many augmented images as mode 3, so a gain cannot come from more data.</aside>
+      <aside class="notes">The test set is small: 20 to 30 real photos, at least 10 with a look-alike and 5 with a forbidden object. Say this out loud, then show the risks slide. Web photos stay in Google Drive, not in GitHub, and we record the source and licence of each one; keeping them out of GitHub does not by itself give permission to reuse them. Photos are grouped by source and deduplicated, and the split happens before any generation. Synthetic counts follow an equal-size rule: mode 4 gets as many synthetic images as mode 2, mode 5 as many augmented images as mode 3, so a gain cannot come from more data.</aside>
     </section>
 
     <!-- 8 · models -->
-    <section class="slide" data-layout="list" aria-roledescription="slide" aria-hidden="true">
-      <div class="slide-inner l-list">
+    <section class="slide" data-layout="table" aria-roledescription="slide" aria-hidden="true">
+      <div class="slide-inner l-table is-compact">
         <header>
           <span class="eyebrow" data-anim="fade">Models and experiment</span>
-          <h2 class="headline" data-anim="rise" data-delay="110">Three detectors, five setups</h2>
-          <hr class="divider is-accent" data-anim="mask" data-delay="220">
+          <h2 class="headline" data-anim="rise" data-delay="110">Five data setups, plus an off-the-shelf baseline</h2>
         </header>
-        <ul class="bullet-list" data-stagger="80" data-delay="280">
-          <li data-anim="lead">Three ready-made object-detection models: RT-DETR (Transformer-based), Faster R-CNN (CNN-based), and a third still to be chosen</li>
-          <li data-anim="lead">Five setups as shown in previous slide</li>
-          <li data-anim="lead">Setups get the same amount of images, so a gain cannot come from simply having more data</li>
-          <li data-anim="lead">Each model is finetuned with the same settings every time. 15 runs in total (3 models × 5 setups) on one T4 GPU</li>
-        </ul>
+        <div class="table-wrap" data-anim="fade" data-delay="240">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Setup</th>
+                <th scope="col">Training data</th>
+                <th scope="col">Question it answers</th>
+              </tr>
+            </thead>
+            <tbody data-stagger="80" data-delay="360">
+              <tr data-anim="lead"><th scope="row">S1</th><td>Real photos only</td><td>Baseline</td></tr>
+              <tr data-anim="lead"><th scope="row">S2</th><td>Real + method A (added objects)</td><td>Does inserting objects help?</td></tr>
+              <tr data-anim="lead"><th scope="row">S3</th><td>Real + method B (changed conditions)</td><td>Does changing conditions help?</td></tr>
+              <tr data-anim="lead"><th scope="row">S4</th><td>Real + A + B, half each, same count as S2</td><td>Do the two methods combine?</td></tr>
+              <tr data-anim="lead"><th scope="row">S5</th><td>Real + classical augmentation, same count as S3</td><td>Is GenAI better than classical?</td></tr>
+              <tr class="is-feature" data-anim="lead"><th scope="row">Zero-shot</th><td>Grounding-DINO, no fine-tuning</td><td>Fine-tuned vs. off-the-shelf</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="caption" data-anim="fade" data-delay="480">Detectors: RT-DETR (Transformer) and Faster R-CNN (CNN) first; a third only if compute allows. Same real split, settings and test set in every run, up to 15 runs on one T4 GPU.</p>
       </div>
-      <aside class="notes">15 fine-tuning runs on a T4 GPU. Everything except the data is identical across runs. The open decisions: the third detector, how to load Faster R-CNN through the Hugging Face tools, ControlNet versus GLIGEN, and which SD model. Grounding-DINO is not one of the three models; it answers the course's fine-tuned versus off-the-shelf comparison. Mode 5 answers the question: why generative AI at all, when darkness and blur can be done classically?</aside>
+      <aside class="notes">Two separate questions: the setups are a data-generation ablation, the detectors are an architecture comparison. All five setups share the same real training split and the same locked real test set. Added-image counts follow one rule: S4 gets as many synthetic images as S2 (half A, half B), S5 gets as many augmented images as S3, so a gain cannot come from more data. Grounding-DINO is not one of the fine-tuned detectors; it answers the course's fine-tuned versus off-the-shelf comparison. Scope fallback: if compute is short, run the two chosen detectors on S1, S5 and the best single generation method first, then expand. Still open: the third detector, how to load Faster R-CNN through the Hugging Face tools, ControlNet versus GLIGEN, and which SD model. S5 answers the question: why generative AI at all, when darkness and blur can be done classically?</aside>
     </section>
 
     <!-- 9 · KPIs -->
-    <section class="slide" data-layout="metrics" aria-roledescription="slide" aria-hidden="true">
-      <div class="slide-inner l-metrics is-text">
+    <section class="slide" data-layout="table" aria-roledescription="slide" aria-hidden="true">
+      <div class="slide-inner l-table is-compact">
         <header>
           <span class="eyebrow" data-anim="fade">Metrics</span>
           <h2 class="headline" data-anim="rise" data-delay="120">How we measure success</h2>
         </header>
-        <ul data-stagger="120" data-delay="240">
-          <li class="metric" data-anim="pop">
-            <h3 class="metric-title">Real test photos</h3>
-            <span class="stat-label">We test on real photos only. The correct boxes are drawn by hand. The model never sees these photos in training, and no generated image is used here.</span>
-          </li>
-          <li class="metric" data-anim="pop">
-            <h3 class="metric-title">Generated images</h3>
-            <span class="stat-label">We check each step: boxes sit on the right object, a fake looks like the real object with one visible defect, and people try to tell real from generated. Bad images are removed. We also compare generated and real photos with two standard image-quality scores (FID, IS).</span>
-          </li>
-          <li class="metric" data-anim="pop">
-            <h3 class="metric-title">Detection quality</h3>
-            <span class="stat-label">How well the model’s boxes match our hand-drawn ones (mAP@50). Also: small objects found, fakes wrongly accepted as real, forbidden objects missed, and how often the pass/fail verdict is right.</span>
-          </li>
-        </ul>
+        <div class="table-wrap" data-anim="fade" data-delay="240">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Metric</th>
+                <th scope="col">Target</th>
+                <th scope="col">How it is counted</th>
+              </tr>
+            </thead>
+            <tbody data-stagger="80" data-delay="360">
+              <tr data-anim="lead"><th scope="row">mAP@50</th><td>+3 points</td><td>Boxes vs. hand-drawn boxes, IoU 0.5</td></tr>
+              <tr data-anim="lead"><th scope="row">Small-object recall</th><td>+5 points</td><td>Share of small objects found</td></tr>
+              <tr data-anim="lead"><th scope="row">Unseen conditions</th><td>+5 points</td><td>Test photos in conditions absent from training (subset to define)</td></tr>
+              <tr data-anim="lead"><th scope="row">Look-alikes passed</th><td>−5 points (assumption)</td><td>% of real look-alikes boxed as the valid object</td></tr>
+              <tr data-anim="lead"><th scope="row">Forbidden missed</th><td>Reported, no target</td><td>% of real forbidden objects not detected, per class</td></tr>
+              <tr data-anim="lead"><th scope="row">Verdict F1</th><td>Exploratory only</td><td>Only if enough valid real test photos exist</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="caption" data-anim="fade" data-delay="480">All on real test photos. Targets: vs. real-only, in at least one model, and provisional: with 20–30 photos a small gap can be noise. Generated images: human review and label checks; FID and IS as diagnostics.</p>
       </div>
-      <aside class="notes">Targets are relative to fine-tuning on real photos only, on the real test set. Also state which method helped more (A or B), and that the trend must repeat in at least two models. Honest caveat: with 20 to 30 test photos, 3 points can be noise, and the PRD does not plan confidence intervals. IS is computed against ImageNet classes and FID needs far more images than we have real ones, so both are reported but are not proof of reliability. The human test (20 real, 20 synthetic, mixed) and the filter report are the real evidence.</aside>
+      <aside class="notes">Targets are relative to fine-tuning on real photos only, on the real test set, and come from the PRD. Also state which method helped more (A or B), and that the trend must repeat in at least two models. A negative result is still a valid research result if the experiment is fair. Honest caveat: with 20 to 30 test photos, 3 points can be noise, so we report the denominators and per-class results, and do not treat hitting a target as proof of a reliable system. IS is computed against ImageNet classes and FID needs far more images than we have real ones, so both are diagnostics only. The human test (20 real, 20 synthetic, mixed), the label checks and the filter report are the real evidence for generated-image quality.</aside>
     </section>
 
     <!-- 10 · risks -->
-    <section class="slide" data-layout="list" aria-roledescription="slide" aria-hidden="true">
-      <div class="slide-inner l-list">
+    <section class="slide" data-layout="table" aria-roledescription="slide" aria-hidden="true">
+      <div class="slide-inner l-table is-compact">
         <header>
           <span class="eyebrow" data-anim="fade">Feedback requested</span>
-          <h2 class="headline" data-anim="rise" data-delay="110">Five risks we want your view on</h2>
-          <hr class="divider is-accent" data-anim="mask" data-delay="220">
-          <p class="caption" data-anim="fade" data-delay="300">Week 9: generated data, EDA, baseline detector.</p>
+          <h2 class="headline" data-anim="rise" data-delay="110">Five risks, and our fallback for each</h2>
         </header>
-        <ul class="bullet-list" data-stagger="80" data-delay="280">
-          <li data-anim="lead">Test set is small: a 3-point gain may be noise</li>
-          <li data-anim="lead">Web photos with look-alikes or forbidden objects may be rare</li>
-          <li data-anim="lead">Almost no web photo shows all five required objects</li>
-          <li data-anim="lead">The AI may not draw a readable Hebrew sign. If so, we drop two classes</li>
-          <li data-anim="lead">Still open: a third object detector, and the tool that places objects (ControlNet or GLIGEN)</li>
-        </ul>
+        <div class="table-wrap" data-anim="fade" data-delay="240">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Risk</th>
+                <th scope="col">Fallback</th>
+              </tr>
+            </thead>
+            <tbody data-stagger="80" data-delay="360">
+              <tr data-anim="lead"><th scope="row">Small test set: a 3-point gain may be noise</th><td>Report per-class counts and uncertainty; claim only what the counts support</td></tr>
+              <tr data-anim="lead"><th scope="row">Real look-alike and forbidden photos are rare</th><td>Count them per class first; narrow to classes with enough real examples</td></tr>
+              <tr data-anim="lead"><th scope="row">Few photos show all five required objects</th><td>Detection is the main result; the verdict stays exploratory</td></tr>
+              <tr data-anim="lead"><th scope="row">The AI may not draw a readable Hebrew sign</th><td>Composite real sign text in a controlled way; drop the two sign classes only if that fails</td></tr>
+              <tr data-anim="lead"><th scope="row">Open: third detector, ControlNet or GLIGEN</th><td>Start with RT-DETR and Faster R-CNN; choose the tool after a small pilot</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="caption" data-anim="fade" data-delay="480">Week 9: generated data, EDA, baseline detector.</p>
       </div>
-      <aside class="notes">Close by asking for approval of the topic and for feedback on these five. Risk 3 in detail: the verdict rule needs every required object in one image, so there will be very few valid real test photos. The verdict is therefore measured on real test photos only, and composites (a web shelter photo with objects added synthetically) are a demo, not a result. The team does not photograph shelters at any point.</aside>
+      <aside class="notes">Close by asking for approval of the topic and for feedback on these five. Risk 3 in detail: the verdict rule needs every required object in one image, so there will be very few valid real test photos. That is why object detection is the main result and the verdict is exploratory, measured on real test photos only; composites (a web shelter photo with objects added synthetically) are a demo, not a result. The team does not photograph shelters at any point.</aside>
     </section>
   </div>
 </div>
