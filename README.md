@@ -23,6 +23,28 @@ Images, checkpoints and models are stored in Google Drive (`drive_root` in `conf
 2. Runtime > Change runtime type > **T4 GPU**.
 3. Runtime > Run all. The last cell prints a pass/fail summary.
 
+## Configuration
+
+Review [config.yaml](config.yaml) before running the notebooks:
+
+| Setting | Purpose |
+|---|---|
+| `drive_root` | Google Drive directory for images, models and results |
+| `seed` | Random seed used by the notebooks |
+| `generation.model` | Hugging Face model used for image generation |
+| `generation.image_size` | Generated image size |
+| `generation.conditions` | Capture conditions to simulate |
+| `generation.images_per_class` | Number of synthetic images per class |
+| `detection.models` | Hugging Face object detection models to evaluate |
+
+Model choices are still open in the configuration. See [PRD.md](PRD.md) for the experiment requirements.
+
+## Troubleshooting
+
+- **Old `torchao` remains loaded:** In Colab, select **Runtime > Disconnect and delete runtime**, reconnect, select a GPU runtime and run all cells again, as directed by the environment-check notebook.
+- **Running code from another branch:** Set `BRANCH` in the repository setup cell before running it. It defaults to `dev`.
+- **Using a different Drive location:** Update `drive_root` in `config.yaml`. Authorize the Google Drive mount when Colab prompts you.
+
 ## Workflow
 
 Each team member works on their own branch and opens a PR to `dev`. Keep each notebook in its own file to avoid merge conflicts. To run a notebook from a branch, set `BRANCH` in its first cell.
