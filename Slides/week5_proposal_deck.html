@@ -17769,6 +17769,14 @@ body.show-notes .slide.is-active .notes{display:block}
 .l-grid.one-row{grid-template-rows:auto auto; align-content:center; gap:30px 22px}
 .l-grid.one-row .card{padding:30px 28px 34px; gap:14px}
 .l-grid.one-row .card .body{font-size:22px}
+.l-kpi{grid-template-rows:auto 1fr 1fr; gap:16px 22px; align-content:stretch}
+.l-kpi .card{padding:18px 22px 18px; gap:10px; justify-content:center}
+.l-kpi .card .body{font-size:17px; line-height:1.4}
+.l-kpi .subhead{font-size:25px; line-height:1.1}
+.l-kpi .icon-tile{inline-size:46px; block-size:46px}
+.kpi-top{display:flex; align-items:center; gap:14px}
+.kpi-tag{position:absolute; inset-block-start:14px; inset-inline-end:16px; font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); white-space:nowrap; opacity:.85}
+.l-kpi .kpi-top{padding-inline-end:0; margin-block-start:10px}
 .tri .tile{aspect-ratio:2 / 3}
 .tri .tile small{font-size:18px; color:var(--fg-faint)}
 .tri{align-items:stretch}
@@ -18113,7 +18121,7 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
           <li class="step" data-anim="pop">
             <span class="step-num">04</span>
             <h3 class="subhead">Verify</h3>
-            <p class="body">The mask only proposes a box. We check every label and reject images where the object, defect or box is wrong.</p>
+            <p class="body">We check every label and reject images where the object, defect or box is wrong.</p>
           </li>
           <li class="step" data-anim="pop">
             <span class="step-num">05</span>
@@ -18177,13 +18185,12 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
               <tr class="is-feature" data-anim="lead">
                 <th scope="row">Augmentation (no AI)</th>
                 <td>Standard brightness, blur and noise changes</td>
-                <td>Same count as changed conditions</td>
+                <td>6 conditions</td>
                 <td>Training</td>
               </tr>
             </tbody>
           </table>
         </div>
-        <p class="caption" data-anim="fade" data-delay="480">Synthetic images come only from training photos, so no test photo leaks into training. Test: 20–30 real photos, at least 10 with a look-alike and 5 with a forbidden object, results reported per class with counts. Source and licence recorded for every web photo.</p>
       </div>
       <aside class="notes">The test set is small: 20 to 30 real photos, at least 10 with a look-alike and 5 with a forbidden object. Say this out loud, then show the risks slide. Web photos stay in Google Drive, not in GitHub (copyright). Synthetic counts follow an equal-size rule: mode 4 gets as many synthetic images as mode 2, mode 5 as many augmented images as mode 3, so a gain cannot come from more data.</aside>
     </section>
@@ -18208,8 +18215,8 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
               <tr data-anim="lead"><th scope="row">S1</th><td>Real photos only</td><td>Baseline</td></tr>
               <tr data-anim="lead"><th scope="row">S2</th><td>Real + method A (added objects)</td><td>Does inserting objects help?</td></tr>
               <tr data-anim="lead"><th scope="row">S3</th><td>Real + method B (changed conditions)</td><td>Does changing conditions help?</td></tr>
-              <tr data-anim="lead"><th scope="row">S4</th><td>Real + A + B, half each, same count as S2</td><td>Do the two methods combine?</td></tr>
-              <tr data-anim="lead"><th scope="row">S5</th><td>Real + classical augmentation, same count as S3</td><td>Is GenAI better than classical?</td></tr>
+              <tr data-anim="lead"><th scope="row">S4</th><td>Real + A + B</td><td>Do the two methods combine?</td></tr>
+              <tr data-anim="lead"><th scope="row">S5</th><td>Real + classical augmentation</td><td>Is GenAI better than classical?</td></tr>
               <tr class="is-feature" data-anim="lead"><th scope="row">Zero-shot</th><td>Grounding-DINO, no fine-tuning</td><td>Fine-tuned vs. off-the-shelf</td></tr>
             </tbody>
           </table>
@@ -18220,34 +18227,38 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
     </section>
 
     <!-- 9 · KPIs -->
-    <section class="slide" data-layout="table" aria-roledescription="slide" aria-hidden="true">
-      <div class="slide-inner l-table is-compact">
+    <section class="slide" data-layout="grid" aria-roledescription="slide" aria-hidden="true">
+      <div class="slide-inner l-grid one-row l-kpi" style="--cols:3; --rows:2" data-stagger="100" data-delay="240">
         <header>
           <span class="eyebrow" data-anim="fade">Metrics</span>
           <h2 class="headline" data-anim="rise" data-delay="120">How we measure success</h2>
         </header>
-        <div class="table-wrap" data-anim="fade" data-delay="240">
-          <table>
-            <thead>
-              <tr>
-                <th scope="col">Metric</th>
-                <th scope="col">Target</th>
-                <th scope="col">How it is counted</th>
-              </tr>
-            </thead>
-            <tbody data-stagger="80" data-delay="360">
-              <tr data-anim="lead"><th scope="row">mAP@50</th><td>+3 points</td><td>Boxes vs. hand-drawn boxes, IoU 0.5</td></tr>
-              <tr data-anim="lead"><th scope="row">Small-object recall</th><td>+5 points</td><td>Share of small objects found</td></tr>
-              <tr data-anim="lead"><th scope="row">Unseen conditions</th><td>+5 points</td><td>Test photos in conditions absent from training (subset to define)</td></tr>
-              <tr data-anim="lead"><th scope="row">Look-alikes passed</th><td>−5 points (assumption)</td><td>% of real look-alikes boxed as the valid object</td></tr>
-              <tr data-anim="lead"><th scope="row">Forbidden missed</th><td>Reported, no target</td><td>% of real forbidden objects not detected, per class</td></tr>
-              <tr data-anim="lead"><th scope="row">Verdict F1</th><td>Exploratory only</td><td>Only if enough valid real test photos exist</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <p class="caption" data-anim="fade" data-delay="480">All on real test photos. Targets: vs. real-only, in at least one model, and provisional: with 20–30 photos a small gap can be noise. Generated images: human review and label checks; FID and IS as diagnostics.</p>
+        <article class="card kpi" data-anim="rise">
+          <div class="kpi-top"><span class="icon-tile"><i class="ph-duotone ph-crosshair"></i></span><h3 class="subhead">mAP@50</h3></div>
+          <p class="body">Detected boxes vs. hand-drawn boxes.</p>
+        </article>
+        <article class="card kpi" data-anim="rise">
+          <div class="kpi-top"><span class="icon-tile"><i class="ph-duotone ph-copy-simple"></i></span><h3 class="subhead">Look-alikes passed</h3></div>
+          <p class="body">% of real look-alikes boxed as the valid object. Lower is better.</p>
+        </article>
+        <article class="card kpi" data-anim="rise">
+          <div class="kpi-top"><span class="icon-tile"><i class="ph-duotone ph-prohibit"></i></span><h3 class="subhead">Forbidden missed</h3></div>
+          <p class="body">% of real forbidden objects not detected, per class.</p>
+        </article>
+        <article class="card kpi" data-anim="rise">
+          <div class="kpi-top"><span class="icon-tile"><i class="ph-duotone ph-scales"></i></span><h3 class="subhead">Verdict F1</h3></div>
+          <p class="body">Only if enough valid real test photos exist.</p>
+        </article>
+        <article class="card kpi" data-anim="rise">
+          <div class="kpi-top"><span class="icon-tile"><i class="ph-duotone ph-sparkle"></i></span><h3 class="subhead">IS</h3></div>
+          <p class="body">Inception Score: are generated images clear and varied? Higher is better.</p>
+        </article>
+        <article class="card kpi" data-anim="rise">
+          <div class="kpi-top"><span class="icon-tile"><i class="ph-duotone ph-aperture"></i></span><h3 class="subhead">FID</h3></div>
+          <p class="body">Fréchet distance: how close generated images are to real photos. Lower is better.</p>
+        </article>
       </div>
-      <aside class="notes">Targets are relative to fine-tuning on real photos only, on the real test set, and come from the PRD. Also state which method helped more (A or B), and that the trend must repeat in at least two models. A negative result is still a valid research result if the experiment is fair. Honest caveat: with 20 to 30 test photos, 3 points can be noise, so we report the denominators and per-class results, and do not treat hitting a target as proof of a reliable system. IS is computed against ImageNet classes and FID needs far more images than we have real ones, so both are diagnostics only. The human test (20 real, 20 synthetic, mixed), the label checks and the filter report are the real evidence for generated-image quality.</aside>
+      <aside class="notes">Every score is on the real test set and compared with fine-tuning on real photos only (setup S1); the numeric targets live in the PRD, not on this slide. Also state which method helped more (A or B), and that the trend must repeat in at least two models. A negative result is still a valid research result if the experiment is fair. Honest caveat: with 20 to 30 test photos, a small gap can be noise, so we report the denominators and per-class results, and do not treat a gain as proof of a reliable system. IS and FID are the two generated-image scores. IS is computed against ImageNet classes and FID needs far more images than we have real ones, so both are diagnostics only. The human test (20 real, 20 synthetic, mixed), the label checks and the filter report are the real evidence for generated-image quality.</aside>
     </section>
 
     <!-- 10 · risks -->
@@ -18266,7 +18277,7 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
               </tr>
             </thead>
             <tbody data-stagger="80" data-delay="360">
-              <tr data-anim="lead"><th scope="row">Small test set: a 3-point gain may be noise</th><td>Report per-class counts and uncertainty; claim only what the counts support</td></tr>
+              <tr data-anim="lead"><th scope="row">Small test set: point gain may be noise</th><td>Report per-class counts and uncertainty; claim only what the counts support</td></tr>
               <tr data-anim="lead"><th scope="row">Real look-alike and forbidden photos are rare</th><td>Count them per class first; narrow to classes with enough real examples</td></tr>
               <tr data-anim="lead"><th scope="row">Few photos show all five required objects</th><td>Detection is the main result; the verdict stays exploratory</td></tr>
               <tr data-anim="lead"><th scope="row">The AI may not draw a readable Hebrew sign</th><td>Composite real sign text in a controlled way; drop the two sign classes only if that fails</td></tr>
