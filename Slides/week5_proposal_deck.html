@@ -18113,7 +18113,7 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
           <li class="step" data-anim="pop">
             <span class="step-num">04</span>
             <h3 class="subhead">Verify</h3>
-            <p class="body">The mask only proposes a box. We check every label and reject images where the object, defect or box is wrong.</p>
+            <p class="body">We check every label and reject images where the object, defect or box is wrong.</p>
           </li>
           <li class="step" data-anim="pop">
             <span class="step-num">05</span>
@@ -18177,13 +18177,12 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
               <tr class="is-feature" data-anim="lead">
                 <th scope="row">Augmentation (no AI)</th>
                 <td>Standard brightness, blur and noise changes</td>
-                <td>Same count as changed conditions</td>
+                <td>6 conditions</td>
                 <td>Training</td>
               </tr>
             </tbody>
           </table>
         </div>
-        <p class="caption" data-anim="fade" data-delay="480">Synthetic images come only from training photos, so no test photo leaks into training. Test: 20–30 real photos, at least 10 with a look-alike and 5 with a forbidden object, results reported per class with counts. Source and licence recorded for every web photo.</p>
       </div>
       <aside class="notes">The test set is small: 20 to 30 real photos, at least 10 with a look-alike and 5 with a forbidden object. Say this out loud, then show the risks slide. Web photos stay in Google Drive, not in GitHub (copyright). Synthetic counts follow an equal-size rule: mode 4 gets as many synthetic images as mode 2, mode 5 as many augmented images as mode 3, so a gain cannot come from more data.</aside>
     </section>
@@ -18208,8 +18207,8 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
               <tr data-anim="lead"><th scope="row">S1</th><td>Real photos only</td><td>Baseline</td></tr>
               <tr data-anim="lead"><th scope="row">S2</th><td>Real + method A (added objects)</td><td>Does inserting objects help?</td></tr>
               <tr data-anim="lead"><th scope="row">S3</th><td>Real + method B (changed conditions)</td><td>Does changing conditions help?</td></tr>
-              <tr data-anim="lead"><th scope="row">S4</th><td>Real + A + B, half each, same count as S2</td><td>Do the two methods combine?</td></tr>
-              <tr data-anim="lead"><th scope="row">S5</th><td>Real + classical augmentation, same count as S3</td><td>Is GenAI better than classical?</td></tr>
+              <tr data-anim="lead"><th scope="row">S4</th><td>Real + A + B</td><td>Do the two methods combine?</td></tr>
+              <tr data-anim="lead"><th scope="row">S5</th><td>Real + classical augmentation</td><td>Is GenAI better than classical?</td></tr>
               <tr class="is-feature" data-anim="lead"><th scope="row">Zero-shot</th><td>Grounding-DINO, no fine-tuning</td><td>Fine-tuned vs. off-the-shelf</td></tr>
             </tbody>
           </table>
@@ -18236,7 +18235,7 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
               </tr>
             </thead>
             <tbody data-stagger="80" data-delay="360">
-              <tr data-anim="lead"><th scope="row">mAP@50</th><td>+3 points</td><td>Boxes vs. hand-drawn boxes, IoU 0.5</td></tr>
+              <tr data-anim="lead"><th scope="row">mAP@50</th><td>+3 points</td><td>Boxes vs. hand-drawn boxes</td></tr>
               <tr data-anim="lead"><th scope="row">Small-object recall</th><td>+5 points</td><td>Share of small objects found</td></tr>
               <tr data-anim="lead"><th scope="row">Unseen conditions</th><td>+5 points</td><td>Test photos in conditions absent from training (subset to define)</td></tr>
               <tr data-anim="lead"><th scope="row">Look-alikes passed</th><td>−5 points (assumption)</td><td>% of real look-alikes boxed as the valid object</td></tr>
@@ -18245,7 +18244,6 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
             </tbody>
           </table>
         </div>
-        <p class="caption" data-anim="fade" data-delay="480">All on real test photos. Targets: vs. real-only, in at least one model, and provisional: with 20–30 photos a small gap can be noise. Generated images: human review and label checks; FID and IS as diagnostics.</p>
       </div>
       <aside class="notes">Targets are relative to fine-tuning on real photos only, on the real test set, and come from the PRD. Also state which method helped more (A or B), and that the trend must repeat in at least two models. A negative result is still a valid research result if the experiment is fair. Honest caveat: with 20 to 30 test photos, 3 points can be noise, so we report the denominators and per-class results, and do not treat hitting a target as proof of a reliable system. IS is computed against ImageNet classes and FID needs far more images than we have real ones, so both are diagnostics only. The human test (20 real, 20 synthetic, mixed), the label checks and the filter report are the real evidence for generated-image quality.</aside>
     </section>
