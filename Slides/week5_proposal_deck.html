@@ -18234,32 +18234,26 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
           <h2 class="headline" data-anim="rise" data-delay="120">How we measure success</h2>
         </header>
         <article class="card kpi" data-anim="rise">
-          <span class="kpi-tag">Real photos</span>
           <div class="kpi-top"><span class="icon-tile"><i class="ph-duotone ph-crosshair"></i></span><h3 class="subhead">mAP@50</h3></div>
           <p class="body">Detected boxes vs. hand-drawn boxes.</p>
         </article>
         <article class="card kpi" data-anim="rise">
-          <span class="kpi-tag">Real photos</span>
           <div class="kpi-top"><span class="icon-tile"><i class="ph-duotone ph-copy-simple"></i></span><h3 class="subhead">Look-alikes passed</h3></div>
           <p class="body">% of real look-alikes boxed as the valid object. Lower is better.</p>
         </article>
         <article class="card kpi" data-anim="rise">
-          <span class="kpi-tag">Real photos</span>
           <div class="kpi-top"><span class="icon-tile"><i class="ph-duotone ph-prohibit"></i></span><h3 class="subhead">Forbidden missed</h3></div>
           <p class="body">% of real forbidden objects not detected, per class.</p>
         </article>
         <article class="card kpi" data-anim="rise">
-          <span class="kpi-tag">Real photos</span>
           <div class="kpi-top"><span class="icon-tile"><i class="ph-duotone ph-scales"></i></span><h3 class="subhead">Verdict F1</h3></div>
           <p class="body">Only if enough valid real test photos exist.</p>
         </article>
-        <article class="card kpi is-feature" data-anim="rise">
-          <span class="kpi-tag">Diagnostic</span>
+        <article class="card kpi" data-anim="rise">
           <div class="kpi-top"><span class="icon-tile"><i class="ph-duotone ph-sparkle"></i></span><h3 class="subhead">IS</h3></div>
           <p class="body">Inception Score: are generated images clear and varied? Higher is better.</p>
         </article>
-        <article class="card kpi is-feature" data-anim="rise">
-          <span class="kpi-tag">Diagnostic</span>
+        <article class="card kpi" data-anim="rise">
           <div class="kpi-top"><span class="icon-tile"><i class="ph-duotone ph-aperture"></i></span><h3 class="subhead">FID</h3></div>
           <p class="body">Fréchet distance: how close generated images are to real photos. Lower is better.</p>
         </article>
@@ -18283,7 +18277,7 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
               </tr>
             </thead>
             <tbody data-stagger="80" data-delay="360">
-              <tr data-anim="lead"><th scope="row">Small test set: a 3-point gain may be noise</th><td>Report per-class counts and uncertainty; claim only what the counts support</td></tr>
+              <tr data-anim="lead"><th scope="row">Small test set: point gain may be noise</th><td>Report per-class counts and uncertainty; claim only what the counts support</td></tr>
               <tr data-anim="lead"><th scope="row">Real look-alike and forbidden photos are rare</th><td>Count them per class first; narrow to classes with enough real examples</td></tr>
               <tr data-anim="lead"><th scope="row">Few photos show all five required objects</th><td>Detection is the main result; the verdict stays exploratory</td></tr>
               <tr data-anim="lead"><th scope="row">The AI may not draw a readable Hebrew sign</th><td>Composite real sign text in a controlled way; drop the two sign classes only if that fails</td></tr>
