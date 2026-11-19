@@ -18027,7 +18027,7 @@ body.show-notes .slide.is-active .notes{display:block}
         <div data-anim="lead" data-delay="260">
           <p class="body">Detect and box visible objects from 10 classes in one shelter photo. We check what is visible; we do not certify a shelter.</p>
           <ul class="bullet-list" style="margin-block-start:22px">
-            <li>Contribution: does generated data beat real-only training and classical augmentation on real photos?</li>
+            <li>Contribution: does generated data beat real-only training, and how does it compare with classical augmentation, on real photos?</li>
             <li>Verdict: exploratory only. An object out of frame is "not observed", not a failure</li>
           </ul>
         </div>
@@ -18115,7 +18115,7 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
           <li class="step" data-anim="pop">
             <span class="step-num">03</span>
             <h3 class="subhead">Generate</h3>
-            <p class="body">A: paint an object, look-alike or forbidden object into a training photo. B: change light, blur or background.</p>
+            <p class="body">A: paint an object, look-alike or forbidden object into a training photo. B: AI edits the scene: add people or furniture, change room size or style.</p>
             <p class="caption">SD inpainting, ControlNet or GLIGEN</p>
           </li>
           <li class="step" data-anim="pop">
@@ -18131,7 +18131,7 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
           </li>
         </ol>
       </div>
-      <aside class="notes">Method A: Stable Diffusion inpainting with ControlNet or GLIGEN places an object, a look-alike or a forbidden object inside a box. The mask proposes the label, and every generated label is checked by hand. Method B changes how the photo was taken: dark, side light, glare, blur, noise, other background. The box should stay put, so we check it after the change and reject images where it no longer fits. Generation only ever starts from training photos. The model choice for generation (SD 1.5 inpainting is the candidate) is still open.</aside>
+      <aside class="notes">Method A: Stable Diffusion inpainting with ControlNet or GLIGEN places an object, a look-alike or a forbidden object inside a box. The mask proposes the label, and every generated label is checked by hand. Method B edits the scene with Stable Diffusion: add people, add furniture, make the room look bigger, change the room style. It does not touch light, blur or noise; that is classical augmentation (setup S5). The boxes are protected: the edit never paints inside them, and we reject any image where the pixels inside a box changed, for example when a person or a bench covers an object. Generation only ever starts from training photos. The model choice for generation (SD 1.5 inpainting is the candidate) is still open.</aside>
     </section>
 
     <!-- 6 · feasibility -->
@@ -18177,14 +18177,14 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
                 <td>Training</td>
               </tr>
               <tr data-anim="lead">
-                <th scope="row">Changed conditions</th>
-                <td>Training photo redrawn by AI: dark, side light, glare, blur, noise, new background</td>
-                <td>6 conditions</td>
+                <th scope="row">Scene edits</th>
+                <td>Training photo edited by AI: add people or furniture, change room size or style</td>
+                <td>4 edit types</td>
                 <td>Training</td>
               </tr>
               <tr class="is-feature" data-anim="lead">
                 <th scope="row">Augmentation (no AI)</th>
-                <td>Standard brightness, blur and noise changes</td>
+                <td>Dark, bright, side light, glare, blur, noise</td>
                 <td>6 conditions</td>
                 <td>Training</td>
               </tr>
@@ -18214,16 +18214,16 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
             <tbody data-stagger="80" data-delay="360">
               <tr data-anim="lead"><th scope="row">S1</th><td>Real photos only</td><td>Baseline</td></tr>
               <tr data-anim="lead"><th scope="row">S2</th><td>Real + method A (added objects)</td><td>Does inserting objects help?</td></tr>
-              <tr data-anim="lead"><th scope="row">S3</th><td>Real + method B (changed conditions)</td><td>Does changing conditions help?</td></tr>
+              <tr data-anim="lead"><th scope="row">S3</th><td>Real + method B (scene edits)</td><td>Do scene edits help?</td></tr>
               <tr data-anim="lead"><th scope="row">S4</th><td>Real + A + B</td><td>Do the two methods combine?</td></tr>
-              <tr data-anim="lead"><th scope="row">S5</th><td>Real + classical augmentation</td><td>Is GenAI better than classical?</td></tr>
+              <tr data-anim="lead"><th scope="row">S5</th><td>Real + classical augmentation</td><td>Does classical light, blur and noise augmentation help?</td></tr>
               <tr class="is-feature" data-anim="lead"><th scope="row">Zero-shot</th><td>Grounding-DINO, no fine-tuning</td><td>Fine-tuned vs. off-the-shelf</td></tr>
             </tbody>
           </table>
         </div>
-        <p class="caption" data-anim="fade" data-delay="480">Detectors: RT-DETR (Transformer) and Faster R-CNN (CNN) first; a third only if compute allows. Same real split, settings and test set in every run, up to 15 runs on one T4 GPU.</p>
+        <p class="caption" data-anim="fade" data-delay="480">Detectors: RT-DETR (Transformer) and YOLO (CNN) first; the course needs three, so the third is still to be chosen. Same real split, settings and test set in every run, up to 15 runs on one T4 GPU.</p>
       </div>
-      <aside class="notes">Two separate questions: the setups are a data-generation ablation, the detectors are an architecture comparison. All five setups share the same real training split and the same locked real test set. Added-image counts follow one rule: S4 gets as many synthetic images as S2 (half A, half B), S5 gets as many augmented images as S3, so a gain cannot come from more data. Grounding-DINO is not one of the fine-tuned detectors; it answers the course's fine-tuned versus off-the-shelf comparison. Scope fallback: if compute is short, run the two chosen detectors on S1, S5 and the best single generation method first, then expand. Still open: the third detector, how to load Faster R-CNN through the Hugging Face tools, ControlNet versus GLIGEN, and which SD model. S5 answers the question: why generative AI at all, when darkness and blur can be done classically?</aside>
+      <aside class="notes">Two separate questions: the setups are a data-generation ablation, the detectors are an architecture comparison. All five setups share the same real training split and the same locked real test set. Added-image counts follow one rule: S4 gets as many synthetic images as S2 (half A, half B), S5 gets as many augmented images as S3, so a gain cannot come from more data. Grounding-DINO is not one of the fine-tuned detectors; it answers the course's fine-tuned versus off-the-shelf comparison. Scope fallback: if compute is short, run the two chosen detectors on S1, S5 and the best single generation method first, then expand. Still open: the third detector, ControlNet versus GLIGEN, and which SD model. YOLO is loaded with the Ultralytics package, not Hugging Face, and its built-in augmentation is switched off so S1 is a clean baseline. S3 and S5 are not a like-for-like pair: B changes what is in the scene, S5 only changes light, blur and noise, so S5 is a classical-augmentation reference and not a test of whether GenAI beats classical augmentation on the same change.</aside>
     </section>
 
     <!-- 9 · KPIs -->
@@ -18258,7 +18258,7 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
           <p class="body">Fréchet distance: how close generated images are to real photos. Lower is better.</p>
         </article>
       </div>
-      <aside class="notes">Every score is on the real test set and compared with fine-tuning on real photos only (setup S1); the numeric targets live in the PRD, not on this slide. Also state which method helped more (A or B), and that the trend must repeat in at least two models. A negative result is still a valid research result if the experiment is fair. Honest caveat: with 20 to 30 test photos, a small gap can be noise, so we report the denominators and per-class results, and do not treat a gain as proof of a reliable system. IS and FID are the two generated-image scores. IS is computed against ImageNet classes and FID needs far more images than we have real ones, so both are diagnostics only. The human test (20 real, 20 synthetic, mixed), the label checks and the filter report are the real evidence for generated-image quality.</aside>
+      <aside class="notes">Every score is on the real test set and compared with fine-tuning on real photos only (setup S1); the numeric targets live in the PRD, not on this slide. Also state which method helped more (A or B), and that the trend must repeat in at least two models. We also report results per slice of the test photos (crowded scene, room size, dark, blurred or glare) with no target, because each slice has very few photos. A negative result is still a valid research result if the experiment is fair. Honest caveat: with 20 to 30 test photos, a small gap can be noise, so we report the denominators and per-class results, and do not treat a gain as proof of a reliable system. IS and FID are the two generated-image scores. IS is computed against ImageNet classes and FID needs far more images than we have real ones, so both are diagnostics only. The human test (20 real, 20 synthetic, mixed), the label checks and the filter report are the real evidence for generated-image quality.</aside>
     </section>
 
     <!-- 10 · risks -->
@@ -18281,7 +18281,7 @@ SEARCH LOG (12 Nov 2026). Run with a web search engine, not by querying each pla
               <tr data-anim="lead"><th scope="row">Real look-alike and forbidden photos are rare</th><td>Count them per class first; narrow to classes with enough real examples</td></tr>
               <tr data-anim="lead"><th scope="row">Few photos show all five required objects</th><td>Detection is the main result; the verdict stays exploratory</td></tr>
               <tr data-anim="lead"><th scope="row">The AI may not draw a readable Hebrew sign</th><td>Composite real sign text in a controlled way; drop the two sign classes only if that fails</td></tr>
-              <tr data-anim="lead"><th scope="row">Open: third detector, ControlNet or GLIGEN</th><td>Start with RT-DETR and Faster R-CNN; choose the tool after a small pilot</td></tr>
+              <tr data-anim="lead"><th scope="row">Open: third detector, ControlNet or GLIGEN</th><td>Start with RT-DETR and YOLO; choose the tool after a small pilot</td></tr>
             </tbody>
           </table>
         </div>
