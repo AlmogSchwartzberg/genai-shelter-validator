@@ -12,7 +12,7 @@ We test whether synthetic images generated with Stable Diffusion improve light f
 | `Code/00_environment_check.ipynb` | Checks GPU, packages, Drive, generation and detection |
 | `Code/01_generate.ipynb` | Generate synthetic images |
 | `Code/02_validate.ipynb` | Realism checks |
-| `Code/03_finetune.ipynb` | Fine-tune detection models |
+| `Code/03_finetune.ipynb` | Fine-tune detection models (currently: YOLO baseline, real images only, with evaluation and error analysis) |
 | `Code/04_results.ipynb` | Results table and plots |
 
 Images, checkpoints and models are stored in Google Drive (`drive_root` in `config.yaml`), never in Git. Drive holds three folders, each created when first needed: `real`, `synthetic`, `results`.
@@ -22,6 +22,10 @@ Images, checkpoints and models are stored in Google Drive (`drive_root` in `conf
 1. Open [`00_environment_check.ipynb` in Colab](https://colab.research.google.com/github/AlmogSchwartzberg/genai-shelter-validator/blob/dev/Code/00_environment_check.ipynb).
 2. Runtime > Change runtime type > **T4 GPU**.
 3. Runtime > Run all. The last cell prints a pass/fail summary.
+
+## Running the YOLO baseline (`03_finetune.ipynb`)
+
+Put `real/` and `synthetic/` folders in Drive (Colab) or in a Kaggle dataset, each with `images/*.jpg` and `labels/*.txt` in YOLO format. Class numbers follow the row order of `Data/objects_table.csv`. On Kaggle: GPU on, Internet on, set `KAGGLE_DATASET` in the first cell. Results (metrics CSVs, confusion matrices, failure grids) are written to `results/`. The number to report is `real_test`; `synthetic_test` is optimistic.
 
 ## Workflow
 
