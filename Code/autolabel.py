@@ -1,13 +1,15 @@
 """Auto-label synthetic images: boxes -> verified YOLO labels (PRD 3.4, 3.5, 3.7 check 5).
 
 Input : {drive_root}/synthetic/metadata.jsonl, one JSON object per image (written by 01_generate):
-    {"image": "synthetic/000123.png",          # path relative to drive_root
+    {"image": "synthetic/images/000123.jpg",   # path relative to drive_root; keep images in synthetic/images/
      "method": "add_objects" | "scene_edits",  # names from config.yaml generation.methods
      "edit_type": null | "add_people" | ...,   # scene_edits only (config generation.scene_edits)
      "source": "real/abc.jpg",                 # scene_edits only, the real image that was edited
      "boxes": [{"class": "fire_extinguisher", "xyxy": [x0, y0, x1, y1]}],  # pixels in the saved image
      ... prompt, seed, model, attributes (PRD 9) are ignored here}
-Output: {drive_root}/synthetic/labels/<image stem>.txt   YOLO lines, only for images that pass
+Output: {drive_root}/synthetic/labels/<image stem>.txt   YOLO lines, only for images that pass.
+        With images in synthetic/images/ this is the images/ + labels/ layout YOLO training reads.
+        A rejected image has no label file: train only on images that have one (YOLO treats a missing label as background)
         {drive_root}/synthetic/autolabel.jsonl           one line per image: status ok|rejected, reason, boxes
 Class id = row order of Data/objects_table.csv (load_classes). Rerun resumes after the last image written.
 """
