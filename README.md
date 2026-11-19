@@ -11,6 +11,7 @@ We test whether synthetic images generated with Stable Diffusion improve light f
 | `Data/objects_table.csv` | Required objects and their lookalikes: appearance, cause, size, how to generate |
 | `Code/00_environment_check.ipynb` | Checks GPU, packages, Drive, generation and detection |
 | `Code/01_generate.ipynb` | Generate synthetic images |
+| `Code/autolabel.py` | Verifies generated boxes with Grounding-DINO and writes YOLO labels (input format in its docstring; test: `pytest Code/test_autolabel.py`) |
 | `Code/02_validate.ipynb` | Realism checks |
 | `Code/03_finetune.ipynb` | Fine-tune detection models |
 | `Code/04_results.ipynb` | Results table and plots |
