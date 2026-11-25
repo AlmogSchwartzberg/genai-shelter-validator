@@ -11,6 +11,8 @@ Output: {drive_root}/synthetic/labels/<image stem>.txt   YOLO lines, only for im
         {drive_root}/synthetic/autolabel.jsonl           one line per image: status ok|rejected, reason, boxes
         With images in synthetic/images/ this is the images/ + labels/ layout YOLO training reads. A rejected image
         has no label file: train only on images that have one (YOLO treats a missing label as background).
+Real photos: prelabel() proposes boxes with the same detector -> real/prelabels.json (COCO). A person reviews and
+corrects them in CVAT or Roboflow and exports COCO to real/annotations.json, which 01_generate reads.
 Class id = row order of Data/objects_table.csv (load_classes). Rerun resumes: an image is skipped only if its
 journal line says rejected, or says ok and its label file exists.
 """
@@ -145,3 +147,32 @@ def run(cfg, root, names, parents, detect):
             done[rec["image"]] = entry
             counts[status] += 1
     return counts
+
+
+def prelabel(cfg, root, names, detect):
+    """Detector proposals for every photo in real/ -> real/prelabels.json (COCO, category id = row in objects_table + 1).
+    Only classes with a phrase in autolabel.prompts are proposed, so lookalikes are not: the detector cannot tell a
+    fake from the real thing, the reviewer changes the class. A person must review every photo, and look for MISSING
+    boxes too (generation paints into free space and training counts an unlabeled object as background)."""
+    real = Path(root) / "real"
+    prompts = cfg["autolabel"]["prompts"]
+    unknown = [c for c in prompts if c not in names]
+    if unknown:
+        raise ValueError(f"autolabel.prompts has classes that are not in objects_table.csv: {unknown}")
+    images, anns = [], []
+    for p in sorted(real.iterdir()):
+        if p.suffix.lower() not in (".jpg", ".jpeg", ".png"):
+            continue
+        img = Image.open(p)
+        w, h = img.size
+        images.append({"id": len(images) + 1, "file_name": p.name, "width": w, "height": h})
+        for cls, phrase in prompts.items():
+            for d in detect(img, phrase):
+                box = clip_box(d, w, h)
+                if box:
+                    anns.append({"id": len(anns) + 1, "image_id": len(images), "category_id": names.index(cls) + 1,
+                                 "bbox": [box[0], box[1], box[2] - box[0], box[3] - box[1]],
+                                 "area": (box[2] - box[0]) * (box[3] - box[1]), "iscrowd": 0})
+    cats = [{"id": i + 1, "name": n} for i, n in enumerate(names)]
+    (real / "prelabels.json").write_text(json.dumps({"images": images, "annotations": anns, "categories": cats}))
+    return {"images": len(images), "boxes": len(anns)}

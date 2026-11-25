@@ -13,7 +13,7 @@ We test whether synthetic images generated with Stable Diffusion improve light f
 | `Code/01_generate.ipynb` | Generate synthetic images (attribute list from an LLM, method A, method B) |
 | `Code/synth.py` | Generation logic used by notebook 01 (test: `pytest Code/test_synth.py`, no GPU needed) |
 | `Data/attributes.json` | The approved LLM attribute list, committed after the team reviewed it. Notebook 01 works on `synthetic/attributes.json` in Drive and refuses to generate until a person sets `"reviewed": true` |
-| `Code/autolabel.py` | Verifies generated boxes with Grounding-DINO and writes YOLO labels (called from notebook 02; input format in its docstring; test: `pytest Code/test_autolabel.py`) |
+| `Code/autolabel.py` | Verifies generated boxes with Grounding-DINO and writes YOLO labels; proposes boxes for real photos (`real/prelabels.json`) for a person to review (called from notebooks 01 and 02; input format in its docstring; test: `pytest Code/test_autolabel.py`) |
 | `Code/02_validate.ipynb` | Realism checks |
 | `Code/03_finetune.ipynb` | Fine-tune detection models |
 | `Code/04_results.ipynb` | Results table and plots |
@@ -32,7 +32,7 @@ Each team member works on their own branch and opens a PR to `dev`. Keep each no
 
 ## Synthetic data format
 
-Written by `Code/01_generate.ipynb` under `drive_root`. Real photos go in `real/` (`*.jpg` and `annotations.json`, COCO, hand-drawn boxes, class names as in `Data/objects_table.csv`); notebook 01 creates `real/split.json` once (seed 42, `train` / `val` / `test` lists of file names). Generation starts only from `train`. Photos are fitted into 512x512 without stretching (gray 114 padding, like YOLO letterboxing); boxes are shifted and scaled with the photo, and nothing is painted in the padding. `annotations.json` must give each photo's true width and height.
+Written by `Code/01_generate.ipynb` under `drive_root`. Real photos go in `real/` (`*.jpg` and `annotations.json`, COCO, boxes proposed by `autolabel.prelabel` (`real/prelabels.json`) and reviewed by hand, class names as in `Data/objects_table.csv`); notebook 01 creates `real/split.json` once (seed 42, `train` / `val` / `test` lists of file names). Generation starts only from `train`. Photos are fitted into 512x512 without stretching (gray 114 padding, like YOLO letterboxing); boxes are shifted and scaled with the photo, and nothing is painted in the padding. `annotations.json` must give each photo's true width and height.
 
 | Path | Content |
 |---|---|

@@ -99,3 +99,22 @@ def test_unknown_class_is_an_error(tmp_path):
     root = make_root(tmp_path, [rec(0, box("tv", [0, 0, 9, 9]))])
     with pytest.raises(ValueError):
         al.run(CFG, root, NAMES, PARENTS, stub())
+
+
+def test_prelabel(tmp_path):
+    real = tmp_path / "real"
+    real.mkdir()
+    for n in ("b.jpg", "a.jpg"):
+        Image.new("RGB", (100, 80), "gray").save(real / n)
+    (real / "annotations.json").write_text("{}")  # not a photo, ignored
+
+    def detect(img, phrase):
+        return [[10, 10, 50, 50], [float("nan"), 0, 5, 5]] if phrase == "gas cylinder" else []
+
+    assert al.prelabel(CFG, tmp_path, NAMES, detect) == {"images": 2, "boxes": 2}
+    coco = json.load(open(real / "prelabels.json"))
+    assert [i["file_name"] for i in coco["images"]] == ["a.jpg", "b.jpg"]
+    gas = NAMES.index("gas_cylinder") + 1
+    assert [(a["image_id"], a["category_id"], a["bbox"]) for a in coco["annotations"]] == [(1, gas, [10, 10, 40, 40]), (2, gas, [10, 10, 40, 40])]
+    assert len(coco["categories"]) == len(NAMES) and coco["categories"][gas - 1]["name"] == "gas_cylinder"
+    assert not any(c["name"] == "fake_extinguisher" and c["id"] in {a["category_id"] for a in coco["annotations"]} for c in coco["categories"])
