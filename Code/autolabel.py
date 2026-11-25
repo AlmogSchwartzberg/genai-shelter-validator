@@ -182,22 +182,28 @@ def prelabel(cfg, root, names, detect):
     return {"images": len(images), "boxes": len(anns)}
 
 
-def roboflow_upload(cfg, root, api_key):
+def roboflow_upload(root):
     """Upload the photos in real/ with real/prelabels.json to an EXISTING Roboflow project, as predictions (to review,
     not ground truth). The team then corrects them in Roboflow and exports COCO to real/annotations.json.
+    Settings come from the environment (.env): ROBOFLOW_API_KEY, ROBOFLOW_WORKSPACE, ROBOFLOW_PROJECT.
     The project is never created from here: that would use the default public license, and the photos are
     copyrighted web images (PRD 13). Create it in the Roboflow UI, private if the plan allows. Needs `pip install roboflow`."""
     from roboflow import Roboflow
 
-    rb, real = cfg["roboflow"], Path(root) / "real"
-    ws = Roboflow(api_key=api_key).workspace(rb["workspace"])
+    names = ("ROBOFLOW_API_KEY", "ROBOFLOW_WORKSPACE", "ROBOFLOW_PROJECT")
+    missing = [n for n in names if not os.environ.get(n)]
+    if missing:
+        raise RuntimeError(f"Missing in .env or the environment: {', '.join(missing)} (see .env.example)")
+    key, workspace, project = (os.environ[n] for n in names)
+    real = Path(root) / "real"
+    ws = Roboflow(api_key=key).workspace(workspace)
     try:
-        ws.project(rb["project"])
+        ws.project(project)
     except Exception as e:
-        raise RuntimeError(f"Roboflow project {rb['project']!r} not found in workspace {rb['workspace']!r} ({e}). "
+        raise RuntimeError(f"Roboflow project {project!r} not found in workspace {workspace!r} ({e}). "
                            "Create it in the Roboflow UI first (type: object detection).") from e
     with tempfile.TemporaryDirectory() as stage:  # upload_dataset reads one folder: the photos plus one COCO file
         for p in photos(real):
             shutil.copy(p, Path(stage) / p.name)
         shutil.copy(real / "prelabels.json", Path(stage) / "_annotations.coco.json")
-        ws.upload_dataset(stage, rb["project"], is_prediction=True, batch_name="prelabels")
+        ws.upload_dataset(stage, project, is_prediction=True, batch_name="prelabels")

@@ -137,11 +137,18 @@ def test_roboflow_upload(tmp_path, monkeypatch):
             calls.append((sorted(p.name for p in Path(stage).iterdir()), project, kw))
 
     fake = types.ModuleType("roboflow")
-    fake.Roboflow = lambda api_key: types.SimpleNamespace(workspace=lambda name: WS())
+    fake.Roboflow = lambda api_key: types.SimpleNamespace(workspace=lambda name: WS() if name == "w" else None)
     monkeypatch.setitem(sys.modules, "roboflow", fake)
-    cfg = {"roboflow": {"workspace": "w", "project": "p"}}
-    al.roboflow_upload(cfg, tmp_path, "key")
+    for n in ("ROBOFLOW_API_KEY", "ROBOFLOW_WORKSPACE", "ROBOFLOW_PROJECT"):
+        monkeypatch.delenv(n, raising=False)
+    with pytest.raises(RuntimeError, match="ROBOFLOW_API_KEY, ROBOFLOW_WORKSPACE, ROBOFLOW_PROJECT"):
+        al.roboflow_upload(tmp_path)
+    monkeypatch.setenv("ROBOFLOW_API_KEY", "key")
+    monkeypatch.setenv("ROBOFLOW_WORKSPACE", "w")
+    monkeypatch.setenv("ROBOFLOW_PROJECT", "p")
+    al.roboflow_upload(tmp_path)
     assert calls == [(["_annotations.coco.json", "a.jpg"], "p", {"is_prediction": True, "batch_name": "prelabels"})]
+    monkeypatch.setenv("ROBOFLOW_PROJECT", "missing")
     with pytest.raises(RuntimeError, match="Create it in the Roboflow UI"):
-        al.roboflow_upload({"roboflow": {"workspace": "w", "project": "missing"}}, tmp_path, "key")
+        al.roboflow_upload(tmp_path)
     assert len(calls) == 1  # nothing is created or uploaded when the project does not exist

@@ -66,10 +66,6 @@ autolabel:             # Code/autolabel.py: verify generated boxes with a zero-s
     gas_cylinder: gas cylinder
     glass_item: mirror or picture frame
 
-roboflow:              # Code/autolabel.py roboflow_upload: key ROBOFLOW_API_KEY in .env
-  workspace: ""        # the workspace url name in Roboflow (fill in)
-  project: ""          # create it in the Roboflow UI first (object detection), private if your plan allows. Free plans are public
-
 augmentation:          # mode 5, classical, no GenAI (PRD 3.9)
   conditions: [dark, bright, side_light, glare, blur, noise]
 
