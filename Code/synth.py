@@ -23,6 +23,7 @@ Class id = row order of Data/objects_table.csv (0-based), the same as Code/autol
 import csv
 import json
 import math
+import os
 import random
 import re
 import zlib
@@ -145,6 +146,17 @@ scene-edit lists that name a class object (light, picture, mirror, bottle...), w
     phrases = [(k, s) for k in ATTR_LISTS for s in attrs[k]] + [(n, s) for n, v in attrs["object_variants"].items() for s in v]
     warnings = [f"{k}: {s!r}" for k, s in phrases if re.search(r"\b(no|not|without|lacking|missing)\b", s, re.I)]
     return warnings + [f"{k}: {s!r} (a scene edit may paint an unlabeled class)" for k in SCENE_LISTS for s in attrs[k] if re.search(UNLABELED, s, re.I)]
+
+
+def load_env(path):
+    """KEY=VALUE lines of a .env file into os.environ. A variable that is already set wins; a missing file is fine."""
+    if not os.path.exists(path):
+        return
+    for line in open(path, encoding="utf8"):
+        line = line.strip()
+        if line and not line.startswith("#") and "=" in line:
+            k, v = line.split("=", 1)
+            os.environ.setdefault(k.strip().removeprefix("export ").strip(), v.strip().strip("\"'"))
 
 
 def generate_attributes(cfg, rows, api_key):

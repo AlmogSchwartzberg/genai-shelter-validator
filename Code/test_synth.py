@@ -238,3 +238,15 @@ def test_source_copies_of_a_b_and_a_underscore_b_do_not_collide(tmp_path):
                        "paint_boxes": [[300, 300, 340, 400]], "prompt": "p", "negative": "n", "attributes": {}, "seed": 1, "strength": 1.0}
     rec = lambda src: synth.render(job(src), Image.new("RGB", (512, 512), "gray"), stub(), cfg)[1]["source"]
     assert rec("a/b.jpg") != rec("a_b.jpg")
+
+
+def test_load_env(tmp_path, monkeypatch):
+    f = tmp_path / ".env"
+    f.write_text("# comment\nOPENAI_API_KEY=\"sk-test\"\nexport OTHER = x y\nKEPT=new\n")
+    monkeypatch.setenv("KEPT", "old")
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv("OTHER", raising=False)
+    synth.load_env(f)
+    synth.load_env(tmp_path / "missing.env")
+    import os
+    assert (os.environ["OPENAI_API_KEY"], os.environ["OTHER"], os.environ["KEPT"]) == ("sk-test", "x y", "old")
