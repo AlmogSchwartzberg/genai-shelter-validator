@@ -41,6 +41,8 @@ generation:
   exclude_classes: []          # add shelter_sign and wrong_sign here if the Hebrew feasibility run fails (PRD 3.2)
   room_scale_factors: [1.3, 1.6, 2.0]   # room_size: the photo shrinks by 1/factor, the border is outpainted
   edit_strength: {room_style: 0.75}     # 1.0 repaints the whole mask; lower keeps more of the room (others use 1.0)
+  scene_negative: "fire extinguisher, gas cylinder, mirror, framed picture, glass, ventilation opening, vent, sign, ceiling light, lamp, water bottle"  # scene edits must not paint class objects: they would have no box
+  feather: 2                   # px of blur on the mask edge when pasting the painted area back (0 = hard edge)
   min_paint_change: 0.04       # drop an image if the painted area changed less than this (generation did nothing; assumed value)
 
 llm:                           # attribute list (PRD 3.11): any OpenAI-compatible API. Key: Colab secret or env var OPENAI_API_KEY

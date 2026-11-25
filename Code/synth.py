@@ -3,11 +3,13 @@ Code/01_generate.ipynb drives it. Everything except make_painter() runs without 
 
 Drive layout (drive_root):
   real/                       real photos + annotations.json (COCO, boxes drawn by hand); split.json is written here
+                              (photos are fitted into image_size x image_size without stretching: gray padding, boxes shifted)
   synthetic/images/<id>.png   generated image, image_size x image_size
-  synthetic/source_512/       resized copy of the real photo each image started from
+  synthetic/source_512/       fitted copy of the real photo each image started from (<stem>_<crc32 of the path>.png)
+  synthetic/attributes.json   working copy of the attribute list (reviewed by hand, then committed as Data/attributes.json)
   synthetic/metadata.jsonl    images that passed the generation filter, one JSON per line (input of Code/autolabel.py)
   synthetic/rejected.jsonl    images the filter dropped, same fields; the png stays on disk (PRD 8)
-Repo: Data/attributes.json    LLM attribute list; generation refuses to start until "reviewed" is true (PRD 3.11)
+Generation refuses to start until attributes.json says "reviewed": true (PRD 3.11). Only a person sets that flag.
 
 metadata.jsonl line:
   {"id", "image": "synthetic/images/<id>.png", "method": "add_objects"|"scene_edits",
@@ -29,12 +31,16 @@ from itertools import zip_longest
 from pathlib import Path
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFilter
 
 EDITS = ("add_people", "add_furniture", "room_size", "room_style")
 # Region sizes for people / furniture at 512 px: (width range, height range, how many). Assumed values.
 REGIONS = {"add_people": ((40, 100), (120, 260), (1, 2)), "add_furniture": ((100, 240), (60, 150), (1, 1))}
 ATTR_LISTS = ("shelter_types", "lighting", "clutter", "people", "furniture", "room_style")
+# Phrases in these lists reach scene edits, where a new light, picture, bottle... would be an unlabeled class instance.
+SCENE_LISTS = ("lighting", "clutter", "people", "furniture", "room_style")
+UNLABELED = r"\b(lights?|lamps?|fixtures?|pictures?|frames?|framed|mirrors?|glass|bottles?|water|extinguishers?|cylinders?|signs?|vents?)\b"
+PAD_GRAY = (114, 114, 114)  # the same gray YOLO letterboxing uses
 
 
 # ---------- objects table, real photos, attributes ----------
@@ -57,9 +63,28 @@ def size_range(row):
     return tuple(int(v) for v in re.search(r"(\d+)\s*-\s*(\d+)", row["size_range"]).groups())
 
 
+def letterbox(w, h, size):
+    """Fit a w x h photo into size x size without stretching -> (x scale, y scale, x offset, y offset, new w, new h)."""
+    if w <= 0 or h <= 0:
+        raise ValueError(f"image size {w}x{h} is not positive")
+    scale = size / max(w, h)
+    nw, nh = max(1, round(w * scale)), max(1, round(h * scale))
+    return nw / w, nh / h, (size - nw) // 2, (size - nh) // 2, nw, nh
+
+
+def load_photo(path, size):
+    """-> the photo fitted into size x size on a gray canvas, the same transform load_real applies to the boxes."""
+    img = Image.open(path).convert("RGB")
+    _, _, ox, oy, nw, nh = letterbox(*img.size, size)
+    canvas = Image.new("RGB", (size, size), PAD_GRAY)
+    canvas.paste(img.resize((nw, nh), Image.LANCZOS), (ox, oy))
+    return canvas
+
+
 def load_real(real_dir, names, size):
-    """Images listed in real/annotations.json (COCO) -> [{"file", "boxes": [{"class", "xyxy"}]}], boxes scaled
-    to size x size (photos are resized without cropping). An image missing from the file is unlabeled: skipped."""
+    """Images listed in real/annotations.json (COCO) -> [{"file", "boxes": [{"class", "xyxy"}], "pad": [xyxy, ...]}]
+    with boxes moved to the fitted photo (see letterbox) and `pad` the gray border rectangles, where nothing may be
+    painted. An image missing from the file is unlabeled: skipped. The file's width/height must match the photo."""
     real_dir = Path(real_dir)
     coco = json.load(open(real_dir / "annotations.json"))
     cats = {c["id"]: c["name"] for c in coco["categories"]}
@@ -71,34 +96,46 @@ def load_real(real_dir, names, size):
         anns[a["image_id"]].append(a)
     items = []
     for im in sorted(coco["images"], key=lambda i: i["file_name"]):
-        if not (real_dir / im["file_name"]).exists():
-            raise FileNotFoundError(real_dir / im["file_name"])
-        sx, sy = size / im["width"], size / im["height"]
+        path = real_dir / im["file_name"]
+        if not path.exists():
+            raise FileNotFoundError(path)
+        sx, sy, ox, oy, nw, nh = letterbox(im["width"], im["height"], size)
+        if Image.open(path).size != (im["width"], im["height"]):
+            raise ValueError(f"{im['file_name']}: annotations.json says {im['width']}x{im['height']}, the file is {Image.open(path).size}")
         boxes = []
         for a in anns[im["id"]]:
             x, y, w, h = a["bbox"]
-            boxes.append({"class": cats[a["category_id"]], "xyxy": [round(x * sx, 1), round(y * sy, 1), round((x + w) * sx, 1), round((y + h) * sy, 1)]})
-        items.append({"file": im["file_name"], "boxes": boxes})
+            boxes.append({"class": cats[a["category_id"]], "xyxy": [round(x * sx + ox, 1), round(y * sy + oy, 1), round((x + w) * sx + ox, 1), round((y + h) * sy + oy, 1)]})
+        pad = [[0, 0, ox, size], [ox + nw, 0, size, size], [0, 0, size, oy], [0, oy + nh, size, size]]
+        items.append({"file": im["file_name"], "boxes": boxes, "pad": [p for p in pad if p[2] > p[0] and p[3] > p[1]]})
     return items
 
 
 def load_split(real_dir, items, seed, test=0.2, val=0.1):
     """real/split.json, created once with the seed (PRD 3.3): {"train", "val", "test"} lists of file names.
-    Photos added later are in no list until split.json is deleted and rebuilt."""
+    Checked every time: no photo in two parts, every listed photo exists. Photos added later are in no list
+    until split.json is deleted and rebuilt."""
     path = Path(real_dir) / "split.json"
     if path.exists():
-        return json.load(open(path))
-    files = sorted(i["file"] for i in items)
-    random.Random(seed).shuffle(files)
-    n_test = round(len(files) * test)
-    n_val = round((len(files) - n_test) * val)
-    split = {"test": files[:n_test], "val": files[n_test:n_test + n_val], "train": files[n_test + n_val:]}
-    json.dump(split, open(path, "w"), indent=1)
+        split = json.load(open(path))
+    else:
+        files = sorted(i["file"] for i in items)
+        random.Random(seed).shuffle(files)
+        n_test = round(len(files) * test)
+        n_val = round((len(files) - n_test) * val)
+        split = {"test": files[:n_test], "val": files[n_test:n_test + n_val], "train": files[n_test + n_val:]}
+        json.dump(split, open(path, "w"), indent=1)
+    listed = [f for part in ("train", "val", "test") for f in split.get(part, [])]
+    dup = sorted(f for f, n in Counter(listed).items() if n > 1)
+    missing = sorted(set(listed) - {i["file"] for i in items})
+    if dup or missing:
+        raise ValueError(f"{path}: photos in more than one part: {dup}; listed but not in annotations.json: {missing}")
     return split
 
 
 def validate_attributes(attrs, names):
-    """Raises on a wrong structure; returns warnings (negations in phrases: Stable Diffusion ignores 'no'/'without')."""
+    """Raises on a wrong structure; returns warnings: negations (Stable Diffusion ignores 'no'/'without') and words in
+scene-edit lists that name a class object (light, picture, mirror, bottle...), which would be painted without a box."""
     for key in ATTR_LISTS:
         if not attrs.get(key) or not all(isinstance(s, str) and s.strip() for s in attrs[key]):
             raise ValueError(f"attributes: {key!r} must be a non-empty list of strings")
@@ -106,7 +143,8 @@ def validate_attributes(attrs, names):
     if missing:
         raise ValueError(f"attributes: object_variants has no entries for {missing}")
     phrases = [(k, s) for k in ATTR_LISTS for s in attrs[k]] + [(n, s) for n, v in attrs["object_variants"].items() for s in v]
-    return [f"{k}: {s!r}" for k, s in phrases if re.search(r"\b(no|not|without|lacking|missing)\b", s, re.I)]
+    warnings = [f"{k}: {s!r}" for k, s in phrases if re.search(r"\b(no|not|without|lacking|missing)\b", s, re.I)]
+    return warnings + [f"{k}: {s!r} (a scene edit may paint an unlabeled class)" for k in SCENE_LISTS for s in attrs[k] if re.search(UNLABELED, s, re.I)]
 
 
 def generate_attributes(cfg, rows, api_key):
@@ -116,9 +154,10 @@ def generate_attributes(cfg, rows, api_key):
     table = "\n".join(f"- {r['name']} ({r['role']}): {r['appearance']}; {r['cause_or_context']}" for r in rows)
     prompt = f"""We build a synthetic image dataset of public shelters (indoor photos) to train object detectors.
 Return ONE JSON object with these keys, each a list of {n} short, different English phrases (max 15 words each):
-shelter_types (kinds of shelter rooms), lighting (lighting conditions), clutter (how cluttered the room is),
-people (people who could stand in the room), furniture (furniture or storage found in a shelter),
-room_style (wall and floor materials, colours, ceiling lights),
+shelter_types (kinds of shelter rooms), lighting (quality of the light only, e.g. dim and warm; never name lamps or fixtures),
+clutter (how cluttered the room is; never name specific objects), people (people who could stand in the room),
+furniture (benches, tables, crates, beds; no shelves with bottles, no mirrors), room_style (wall and floor materials and colours only;
+no lights, pictures, mirrors or decorations),
 and object_variants: an object whose keys are exactly the class names below, each a list of {n} phrases that describe
 how that object can look in a photo. A lookalike must look right at first glance but show the defect given in its description.
 Describe only what is visible. Never use negations ("no", "without", "missing"): image models ignore them.
@@ -128,7 +167,7 @@ Classes:
     reply = client.chat.completions.create(
         model=llm["model"], messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"}, temperature=llm.get("temperature", 0.8))
-    attrs = {"reviewed": False, "llm_model": llm["model"], **json.loads(reply.choices[0].message.content)}
+    attrs = {**json.loads(reply.choices[0].message.content), "reviewed": False, "llm_model": llm["model"]}  # only a person sets reviewed
     return attrs, validate_attributes(attrs, [r["name"] for r in rows])
 
 
@@ -165,6 +204,14 @@ def rects_mask(size, boxes):
     for x0, y0, x1, y1 in boxes:
         mask[int(y0):int(y1), int(x0):int(x1)] = 255
     return Image.fromarray(mask)
+
+
+def grid_round(box, size, margin=8):
+    """Box grown by `margin` px and rounded out to the 8 px grid of the Stable Diffusion latent, so a mask edge
+    never cuts through the box (the mask is downsampled 8x, an edge inside a block repaints the whole block)."""
+    x0, y0, x1, y1 = box
+    return [max(0, int((x0 - margin) // 8 * 8)), max(0, int((y0 - margin) // 8 * 8)),
+            min(size, math.ceil((x1 + margin) / 8) * 8), min(size, math.ceil((y1 + margin) / 8) * 8)]
 
 
 def shrink_canvas(img, factor, size):
@@ -230,7 +277,7 @@ def plan_jobs(cfg, rows, attrs, items, split):
                     break
             else:
                 raise ValueError(f"{gid}: no free spot found in 20 photos, objects/regions too large for the photos")
-            job.update(id=f"{gid}_{k:04d}", method=method, edit_type=edit, source=src["file"], source_boxes=src["boxes"],
+            job.update(id=f"{gid}_{k:04d}", method=method, edit_type=edit, source=src["file"], source_boxes=src["boxes"], pad=src["pad"],
                        strength=g.get("edit_strength", {}).get(edit, 1.0))
             job["seed"] = seed + zlib.crc32(job["id"].encode())
             jobs.append(job)
@@ -245,7 +292,7 @@ def plan_jobs(cfg, rows, attrs, items, split):
             lo, hi = size_range(row)
             long_side, aspect = rng.randint(lo, hi), g["aspect"].get(name, 1.0)
             w, h = (round(long_side * aspect), long_side) if aspect < 1 else (long_side, round(long_side / aspect))
-            box = place(rng, size, w, h, [b["xyxy"] for b in src["boxes"]])
+            box = place(rng, size, w, h, [b["xyxy"] for b in src["boxes"]] + src["pad"])
             if not box:
                 return None
             prompt, used = make_prompt("add_objects", attrs, rng, name)
@@ -259,7 +306,7 @@ def plan_jobs(cfg, rows, attrs, items, split):
             job = {"paint_boxes": []}
             if edit in REGIONS:
                 (w0, w1), (h0, h1), (n0, n1) = REGIONS[edit]
-                avoid = [b["xyxy"] for b in src["boxes"]]
+                avoid = [b["xyxy"] for b in src["boxes"]] + src["pad"]
                 for _ in range(rng.randint(n0, n1)):
                     box = place(rng, size, rng.randint(w0, w1), rng.randint(h0, h1), avoid, y_min=size // 2)
                     if box:
@@ -270,7 +317,7 @@ def plan_jobs(cfg, rows, attrs, items, split):
             if edit == "room_size":
                 job["factor"] = rng.choice(g["room_scale_factors"])
             job["prompt"], job["attributes"] = make_prompt(edit, attrs, rng)
-            job["negative"] = g["negative_prompt"]
+            job["negative"] = ", ".join([g["negative_prompt"], g["scene_negative"]])  # no new class objects without a box
             return job
 
         group(edit, "scene_edits", edit, g["images_per_edit_type"], build_b)
@@ -294,9 +341,9 @@ def render(job, src_img, paint, cfg):
         keep = [{"class": b["class"], "xyxy": [round(v * scale + off, 1) for v in b["xyxy"]]} for b in src_boxes]
     else:
         canvas, keep = src_img, src_boxes
-        if job["edit_type"] == "room_style":  # everything except the protected boxes
+        if job["edit_type"] == "room_style":  # everything except the boxes (with a margin on the 8 px grid) and the gray border
             mask = np.full((size, size), 255, np.uint8)
-            for x0, y0, x1, y1 in (b["xyxy"] for b in src_boxes):
+            for x0, y0, x1, y1 in [grid_round(b["xyxy"], size) for b in src_boxes] + job["pad"]:
                 mask[int(y0):int(y1), int(x0):int(x1)] = 0
             mask = Image.fromarray(mask)
         else:
@@ -315,31 +362,61 @@ def render(job, src_img, paint, cfg):
         reasons.append(f"painted area barely changed ({paint_change:.3f})")
     new = [{"class": job["cls"], "xyxy": b, "origin": "synthetic"} for b in job["paint_boxes"]] if job["method"] == "add_objects" else []
     boxes = [{**b, "origin": "source"} for b in keep] + new
-    stem = Path(job["source"]).with_suffix("").as_posix().replace("/", "_")
+    stem = f"{Path(job['source']).stem}_{zlib.crc32(job['source'].encode()):08x}"  # the hash keeps a/b.jpg and a_b.jpg apart
     rec = {"id": job["id"], "image": f"synthetic/images/{job['id']}.png", "method": job["method"], "edit_type": job["edit_type"],
            "source": f"synthetic/source_512/{stem}.png", "source_real": f"real/{job['source']}", "boxes": boxes,
            "prompt": job["prompt"], "negative_prompt": job["negative"], "attributes": job["attributes"], "seed": job["seed"],
            "model": g["model"], "placement": g["placement"] if job["method"] == "add_objects" else "inpaint",
            "strength": job["strength"], "factor": job.get("factor"),
            "filter": {"passed": not reasons, "reasons": reasons, "box_change": round(changed, 4), "paint_change": round(paint_change, 4)}}
-    return Image.composite(raw, canvas, mask), rec
+    # feathered edge against a visible seam; the boxes are then copied back exactly, the feather cannot reach them
+    final = Image.composite(raw, canvas, mask.filter(ImageFilter.GaussianBlur(g["feather"])) if g["feather"] else mask)
+    for x0, y0, x1, y1 in protected:
+        box = (math.floor(x0), math.floor(y0), math.ceil(x1), math.ceil(y1))
+        final.paste(canvas.crop(box), box[:2])
+    return final, rec
+
+
+def read_jsonl(path):
+    """Records of a jsonl file. A last line cut by a disconnect is removed from the file; any other bad line is an error."""
+    path = Path(path)
+    if not path.exists():
+        return []
+    lines, recs = path.read_text().splitlines(keepends=True), []
+    for i, line in enumerate(lines):
+        try:
+            recs.append(json.loads(line))
+        except json.JSONDecodeError:
+            if i < len(lines) - 1:
+                raise ValueError(f"{path}: line {i + 1} is corrupt, not only cut off at the end")
+            lines = lines[:-1]
+    fixed = "".join(l if l.endswith("\n") else l + "\n" for l in lines)  # the next record starts on its own line
+    if fixed != path.read_text():
+        path.write_text(fixed)
+    return recs
 
 
 def run(cfg, root, jobs, paint, limit=None, log=print):
-    """Generate every job that has no line yet in metadata.jsonl or rejected.jsonl (resume after a disconnect).
-    Image first, record second: a crash in between only repeats that one image. -> number of new images."""
-    root, size = Path(root), cfg["generation"]["image_size"]
+    """Generate every job that has no record yet in metadata.jsonl or rejected.jsonl (resume after a disconnect).
+    Image first, record second: a crash in between only repeats that one image. A job id that already has a record
+    made with another seed, prompt or model (config or attributes changed since) is an error, not a silent skip.
+    -> number of new images."""
+    root, g = Path(root), cfg["generation"]
     syn = root / "synthetic"
     (syn / "source_512").mkdir(parents=True, exist_ok=True)
     (syn / "images").mkdir(exist_ok=True)
-    done = {json.loads(l)["id"] for name in ("metadata", "rejected") if (syn / f"{name}.jsonl").exists() for l in open(syn / f"{name}.jsonl")}
+    done = {r["id"]: r for name in ("metadata", "rejected") for r in read_jsonl(syn / f"{name}.jsonl")}
     made = 0
     for job in jobs:
-        if job["id"] in done:
+        old = done.get(job["id"])
+        if old:
+            if (old["seed"], old["prompt"], old["model"]) != (job["seed"], job["prompt"], g["model"]):
+                raise RuntimeError(f"{job['id']} already exists with another seed, prompt or model. Use a new drive_root, or "
+                                   "delete the synthetic/ folder, before changing the seed, the attributes or the model")
             continue
         if limit is not None and made >= limit:
             break
-        img = Image.open(root / "real" / job["source"]).convert("RGB").resize((size, size), Image.LANCZOS)
+        img = load_photo(root / "real" / job["source"], g["image_size"])
         final, rec = render(job, img, paint, cfg)
         copy = root / rec["source"]
         if not copy.exists():
@@ -356,11 +433,10 @@ def run(cfg, root, jobs, paint, limit=None, log=print):
 def coverage(root, rows):
     """Passed images per generated class and per edit type, and which classes are under images_per_class (PRD 3.7)."""
     syn = Path(root) / "synthetic"
-    recs = [json.loads(l) for l in open(syn / "metadata.jsonl")] if (syn / "metadata.jsonl").exists() else []
+    recs = read_jsonl(syn / "metadata.jsonl")
     per_class = Counter(b["class"] for r in recs for b in r["boxes"] if b["origin"] == "synthetic")
     per_edit = Counter(r["edit_type"] for r in recs if r["method"] == "scene_edits")
-    rejected = Counter(re.sub(r"[\d.]+", "#", x) for l in open(syn / "rejected.jsonl") for x in json.loads(l)["filter"]["reasons"]) \
-        if (syn / "rejected.jsonl").exists() else Counter()
+    rejected = Counter(re.sub(r"[\d.]+", "#", x) for r in read_jsonl(syn / "rejected.jsonl") for x in r["filter"]["reasons"])
     return {"per_class": {r["name"]: per_class[r["name"]] for r in rows}, "per_edit_type": dict(per_edit), "rejected_reasons": dict(rejected)}
 
 
