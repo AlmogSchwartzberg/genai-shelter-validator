@@ -14,14 +14,49 @@ generation:
   methods: [add_objects, scene_edits]   # add_objects also inserts lookalikes (PRD 3.4)
   scene_edits: [add_people, add_furniture, room_size, room_style]   # method B (PRD 3.5): AI edits, boxes protected
   box_change_threshold: 0.05   # drop an edited image if pixels inside any box changed more than this (assumed value)
-  images_per_class: 100
+  images_per_class: 100        # add_objects: passed images per class (PRD 3.7); extra ones are planned, see overshoot
+  images_per_edit_type: 250    # scene_edits: 4 types x 250 = 1000, the same as add_objects (10 classes x 100), so modes 2 and 3 get equal amounts (PRD 3.9)
+  overshoot: 1.25              # plan this much more than the targets, the filter drops some (assumed value)
+  placement: inpaint           # add_objects tool: inpaint | controlnet | gligen. Open question, decided by the pilot (PRD 14). scene_edits always use inpaint
+  controlnet: lllyasviel/control_v11p_sd15_inpaint
+  controlnet_base: stable-diffusion-v1-5/stable-diffusion-v1-5
+  gligen: masterful/gligen-1-4-inpainting-text-box
+  steps: 30
+  guidance_scale: 7.5
+  negative_prompt: "text, watermark, blurry, deformed, cartoon, drawing, painting"
+  class_negative:              # image models ignore "without", so the missing part goes in the negative prompt
+    fake_extinguisher: "hose, pressure gauge, handle, nozzle"
+    vent_no_cover: "cover, grille, louvers, panel"
+  aspect:                      # box width / height per class; the table only has the size range (assumed values)
+    fire_extinguisher: 0.4
+    fake_extinguisher: 0.4
+    vent_cover: 1.0
+    vent_no_cover: 1.0
+    shelter_sign: 2.0
+    wrong_sign: 2.0
+    light_fixture: 1.2
+    drinking_water: 0.5
+    gas_cylinder: 0.45
+    glass_item: 0.8
+  exclude_classes: []          # add shelter_sign and wrong_sign here if the Hebrew feasibility run fails (PRD 3.2)
+  room_scale_factors: [1.3, 1.6, 2.0]   # room_size: the photo shrinks by 1/factor, the border is outpainted
+  edit_strength: {room_style: 0.75}     # 1.0 repaints the whole mask; lower keeps more of the room (others use 1.0)
+  scene_negative: "fire extinguisher, gas cylinder, mirror, framed picture, glass, ventilation opening, vent, sign, ceiling light, lamp, water bottle"  # scene edits must not paint class objects: they would have no box
+  feather: 2                   # px of blur on the mask edge when pasting the painted area back (0 = hard edge)
+  min_paint_change: 0.04       # drop an image if the painted area changed less than this (generation did nothing; assumed value)
+
+llm:                           # attribute list (PRD 3.11): any OpenAI-compatible API. Key: Colab secret or env var OPENAI_API_KEY
+  model: gpt-4o                # open question (PRD 14)
+  base_url: null               # set for OpenRouter / Gemini etc.
+  n_per_list: 8
+  temperature: 0.8
 
 autolabel:             # Code/autolabel.py: verify generated boxes with a zero-shot detector, write YOLO labels
   detector: IDEA-Research/grounding-dino-tiny   # fits a T4 easily
   box_threshold: 0.3
   text_threshold: 0.25
   min_iou: 0.4         # assumed value: reject an image if the detector finds no box overlapping the generated one this much. Calibrate on the 20-sample manual check
-  refine: false        # true = keep the detector's box instead of the generated one
+  refine: false        # true = keep the detector's box instead of the generated one (clipped to the image). Decide on the pilot: the generated box is often looser than the object
   prompts:             # detector phrase per class. A lookalike without its own phrase reuses the phrase of the object it imitates
     fire_extinguisher: fire extinguisher
     vent_cover: ventilation opening

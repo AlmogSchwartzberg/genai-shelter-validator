@@ -1,23 +1,25 @@
-"""Auto-label synthetic images: boxes -> verified YOLO labels (PRD 3.4, 3.5, 3.7 check 5).
+"""Auto-label synthetic images: verify generated boxes, write YOLO labels (PRD 3.4, 3.7 check 5).
 
-Input : {drive_root}/synthetic/metadata.jsonl, one JSON object per image (written by 01_generate):
-    {"image": "synthetic/images/000123.jpg",   # path relative to drive_root; keep images in synthetic/images/
-     "method": "add_objects" | "scene_edits",  # names from config.yaml generation.methods
-     "edit_type": null | "add_people" | ...,   # scene_edits only (config generation.scene_edits)
-     "source": "real/abc.jpg",                 # scene_edits only, the real image that was edited
-     "boxes": [{"class": "fire_extinguisher", "xyxy": [x0, y0, x1, y1]}],  # pixels in the saved image
-     ... prompt, seed, model, attributes (PRD 9) are ignored here}
-Output: {drive_root}/synthetic/labels/<image stem>.txt   YOLO lines, only for images that pass.
-        With images in synthetic/images/ this is the images/ + labels/ layout YOLO training reads.
-        A rejected image has no label file: train only on images that have one (YOLO treats a missing label as background)
+Input : {drive_root}/synthetic/metadata.jsonl, written by 01_generate (Code/synth.py, README "Synthetic data format").
+        Used fields per line: "image" (path relative to drive_root) and
+        "boxes": [{"class": name from objects_table.csv, "xyxy": [x0, y0, x1, y1] pixels of the saved image,
+                   "origin": "synthetic" | "source"}]
+        "synthetic" = the painted object (add_objects). "source" = a box from the real photo, kept and protected
+        (shifted/scaled for room_size). Only synthetic boxes can be wrong, so only they go to the detector;
+        source boxes are kept as they are (clipped to the image). A missing origin counts as synthetic.
+Output: {drive_root}/synthetic/labels/<image stem>.txt   YOLO lines, only for images that pass
         {drive_root}/synthetic/autolabel.jsonl           one line per image: status ok|rejected, reason, boxes
-Class id = row order of Data/objects_table.csv (load_classes). Rerun resumes after the last image written.
+        With images in synthetic/images/ this is the images/ + labels/ layout YOLO training reads. A rejected image
+        has no label file: train only on images that have one (YOLO treats a missing label as background).
+Class id = row order of Data/objects_table.csv (load_classes). Rerun resumes: an image is skipped only if its
+journal line says rejected, or says ok and its label file exists.
 """
 import csv
 import json
+import math
+import os
 from pathlib import Path
 
-import numpy as np
 from PIL import Image
 
 
@@ -35,10 +37,13 @@ def iou(a, b):
     return inter / union if union > 0 else 0.0
 
 
-def map_boxes(boxes, scale, dx, dy):
-    """Boxes after the original image is resized by `scale` and pasted at (dx, dy) on a bigger canvas
-    (room_size outpainting, PRD 3.5)."""
-    return [[x0 * scale + dx, y0 * scale + dy, x1 * scale + dx, y1 * scale + dy] for x0, y0, x1, y1 in boxes]
+def clip_box(xyxy, w, h):
+    """Box clipped to the image, or None if a coordinate is not finite or less than 2 px is left."""
+    x0, y0, x1, y1 = (float(v) for v in xyxy)
+    if not all(map(math.isfinite, (x0, y0, x1, y1))):
+        return None
+    x0, y0, x1, y1 = max(0.0, x0), max(0.0, y0), min(float(w), x1), min(float(h), y1)
+    return [x0, y0, x1, y1] if x1 - x0 >= 2 and y1 - y0 >= 2 else None
 
 
 def to_yolo(class_id, xyxy, w, h):
@@ -46,12 +51,19 @@ def to_yolo(class_id, xyxy, w, h):
     return f"{class_id} {(x0 + x1) / 2 / w:.6f} {(y0 + y1) / 2 / h:.6f} {(x1 - x0) / w:.6f} {(y1 - y0) / h:.6f}"
 
 
-def box_changed(src, out, xyxy):
-    """Mean absolute pixel change (0..1) inside the box between two same-size images."""
-    x0, y0, x1, y1 = (int(round(v)) for v in xyxy)
-    a = np.asarray(src.convert("RGB"), dtype=np.float32)[y0:y1, x0:x1]
-    b = np.asarray(out.convert("RGB"), dtype=np.float32)[y0:y1, x0:x1]
-    return float(np.abs(a - b).mean() / 255)
+def read_jsonl(path):
+    """Lines as dicts. A half-written last line (disconnect) is ignored; a bad line anywhere else is an error."""
+    if not path.exists():
+        return []
+    lines = [l for l in path.read_text().splitlines() if l.strip()]
+    out = []
+    for i, l in enumerate(lines):
+        try:
+            out.append(json.loads(l))
+        except json.JSONDecodeError:
+            if i < len(lines) - 1:
+                raise
+    return out
 
 
 def grounding_dino(cfg):
@@ -77,61 +89,59 @@ def grounding_dino(cfg):
 
 
 def label_image(rec, root, names, parents, cfg, detect):
-    """-> (status, reason, boxes with iou/final xyxy). Rejects the whole image if any box fails."""
-    al, gen = cfg["autolabel"], cfg["generation"]
+    """-> (status, reason, boxes, (w, h)). Rejects the whole image if any box is invalid or a synthetic box fails."""
+    al = cfg["autolabel"]
     img = Image.open(root / rec["image"])
     w, h = img.size
-    src = None
-    # scene_edits keep the real image's boxes: verify by pixels when the canvas is unchanged
-    if rec["method"] == "scene_edits" and rec.get("edit_type") != "room_size":
-        src = Image.open(root / rec["source"])
-        if src.size != img.size:
-            return "rejected", "source and edited image differ in size", []
+    if not rec["boxes"]:
+        return "rejected", "no boxes", [], (w, h)
     out = []
     for b in rec["boxes"]:
-        cls, box = b["class"], [float(v) for v in b["xyxy"]]
+        cls = b["class"]
         if cls not in names:
             raise ValueError(f"class {cls!r} is not in objects_table.csv")
-        box = [max(0, box[0]), max(0, box[1]), min(w, box[2]), min(h, box[3])]
-        if box[2] - box[0] < 2 or box[3] - box[1] < 2:
-            return "rejected", f"{cls}: box is empty or outside the image", out
-        if src is not None:
-            ch = box_changed(src, img, box)
-            if ch > gen["box_change_threshold"]:
-                return "rejected", f"{cls}: pixels inside the box changed by {ch:.2f}", out
+        box = clip_box(b["xyxy"], w, h)
+        if box is None:
+            return "rejected", f"{cls}: box is not finite, empty or outside the image", out, (w, h)
+        if b.get("origin", "synthetic") == "source":
             out.append({"class": cls, "xyxy": box})
             continue
         # a lookalike is checked with its own phrase if set, else with the object it imitates: the detector
         # confirms "an object of this kind sits here", not that the defect is right (that stays a manual check)
         phrase = al["prompts"].get(cls) or al["prompts"][parents[cls]]
-        dets = detect(img, phrase)
+        dets = [d for d in (clip_box(d, w, h) for d in detect(img, phrase)) if d]  # compare inside the image
         best = max(dets, key=lambda d: iou(box, d), default=None)
         score = iou(box, best) if best else 0.0
         if score < al["min_iou"]:
-            return "rejected", f"{cls}: detector IoU {score:.2f} < {al['min_iou']}", out
+            return "rejected", f"{cls}: detector IoU {score:.2f} < {al['min_iou']}", out, (w, h)
         out.append({"class": cls, "xyxy": best if al["refine"] else box, "iou": round(score, 3)})
-    return "ok", None, out
+    return "ok", None, out, (w, h)
 
 
 def run(cfg, root, names, parents, detect):
-    """Label every image in metadata.jsonl that autolabel.jsonl does not list yet. -> counts per status."""
+    """Label every image in metadata.jsonl that autolabel.jsonl does not settle yet. -> counts per status."""
     root = Path(root)
     syn = root / "synthetic"
     (syn / "labels").mkdir(parents=True, exist_ok=True)
-    done_file = syn / "autolabel.jsonl"
-    done = {json.loads(l)["image"] for l in done_file.open()} if done_file.exists() else set()
+    journal = syn / "autolabel.jsonl"
+    # keep one line per image; drop an "ok" whose label file is gone and a half-written last line, so they are redone
+    done = {e["image"]: e for e in read_jsonl(journal)
+            if e["status"] == "rejected" or (syn / "labels" / (Path(e["image"]).stem + ".txt")).exists()}
+    tmp = journal.with_name(journal.name + ".tmp")
+    tmp.write_text("".join(json.dumps(e) + "\n" for e in done.values()))
+    os.replace(tmp, journal)
     counts = {"ok": 0, "rejected": 0}
-    with done_file.open("a") as f:
-        for line in open(syn / "metadata.jsonl"):
-            rec = json.loads(line)
-            if rec["image"] in done:
+    with journal.open("a") as f:
+        for rec in read_jsonl(syn / "metadata.jsonl"):
+            if rec["image"] in done:  # also skips a duplicate row of this run
                 continue
-            status, reason, boxes = label_image(rec, root, names, parents, cfg, detect)
+            status, reason, boxes, (w, h) = label_image(rec, root, names, parents, cfg, detect)
             if status == "ok":
-                w, h = Image.open(root / rec["image"]).size
                 lines = [to_yolo(names.index(b["class"]), b["xyxy"], w, h) for b in boxes]
                 (syn / "labels" / (Path(rec["image"]).stem + ".txt")).write_text("".join(l + "\n" for l in lines))
-            f.write(json.dumps({"image": rec["image"], "status": status, "reason": reason, "boxes": boxes}) + "\n")
+            entry = {"image": rec["image"], "status": status, "reason": reason, "boxes": boxes}
+            f.write(json.dumps(entry) + "\n")  # label first, journal second: a crash in between just redoes the image
             f.flush()
+            done[rec["image"]] = entry
             counts[status] += 1
     return counts
