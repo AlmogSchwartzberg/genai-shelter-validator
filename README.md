@@ -26,6 +26,10 @@ Images, checkpoints and models are stored in Google Drive (`drive_root` in `conf
 2. Runtime > Change runtime type > **T4 GPU**.
 3. Runtime > Run all. The last cell prints a pass/fail summary.
 
+## API keys
+
+Keys live in a `.env` file, never in Git (`.env` is in `.gitignore`). Copy `.env.example` to `.env` and fill it in. In Colab put the file in the Drive folder (`drive_root`), because the repo is cloned fresh on every run; locally put it in the repo root. Notebook 01 reads `OPENAI_API_KEY` from it; a real environment variable or a Colab secret of the same name also works.
+
 ## Workflow
 
 Each team member works on their own branch and opens a PR to `dev`. Keep each notebook in its own file to avoid merge conflicts. To run a notebook from a branch, set `BRANCH` in its first cell.
