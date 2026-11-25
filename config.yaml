@@ -51,6 +51,21 @@ llm:                           # attribute list (PRD 3.11): any OpenAI-compatibl
   n_per_list: 8
   temperature: 0.8
 
+autolabel:             # Code/autolabel.py: verify generated boxes with a zero-shot detector, write YOLO labels
+  detector: IDEA-Research/grounding-dino-tiny   # fits a T4 easily
+  box_threshold: 0.3
+  text_threshold: 0.25
+  min_iou: 0.4         # assumed value: reject an image if the detector finds no box overlapping the generated one this much. Calibrate on the 20-sample manual check
+  refine: false        # true = keep the detector's box instead of the generated one (clipped to the image). Decide on the pilot: the generated box is often looser than the object
+  prompts:             # detector phrase per class. A lookalike without its own phrase reuses the phrase of the object it imitates
+    fire_extinguisher: fire extinguisher
+    vent_cover: ventilation opening
+    shelter_sign: sign
+    light_fixture: ceiling light
+    drinking_water: water bottle
+    gas_cylinder: gas cylinder
+    glass_item: mirror or picture frame
+
 augmentation:          # mode 5, classical, no GenAI (PRD 3.9)
   conditions: [dark, bright, side_light, glare, blur, noise]
 
