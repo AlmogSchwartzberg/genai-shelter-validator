@@ -13,7 +13,7 @@ We test whether synthetic images generated with Stable Diffusion improve light f
 | `Code/01_generate.ipynb` | Generate synthetic images (attribute list from an LLM, method A, method B) |
 | `Code/synth.py` | Generation logic used by notebook 01 (test: `pytest Code/test_synth.py`, no GPU needed) |
 | `Data/attributes.json` | The approved LLM attribute list, committed after the team reviewed it. Notebook 01 works on `synthetic/attributes.json` in Drive and refuses to generate until a person sets `"reviewed": true` |
-| `Code/autolabel.py` | Verifies generated boxes with Grounding-DINO and writes YOLO labels; proposes boxes for real photos (`real/prelabels.json`) for a person to review (called from notebooks 01 and 02; input format in its docstring; test: `pytest Code/test_autolabel.py`) |
+| `Code/autolabel.py` | Verifies generated boxes with Grounding-DINO and writes YOLO labels; proposes boxes for real photos (`real/prelabels.json`) for a person to review, optionally uploaded to Roboflow (called from notebooks 01 and 02; input format in its docstring; test: `pytest Code/test_autolabel.py`) |
 | `Code/02_validate.ipynb` | Realism checks |
 | `Code/03_finetune.ipynb` | Fine-tune detection models |
 | `Code/04_results.ipynb` | Results table and plots |

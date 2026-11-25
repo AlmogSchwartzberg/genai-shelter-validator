@@ -118,3 +118,30 @@ def test_prelabel(tmp_path):
     assert [(a["image_id"], a["category_id"], a["bbox"]) for a in coco["annotations"]] == [(1, gas, [10, 10, 40, 40]), (2, gas, [10, 10, 40, 40])]
     assert len(coco["categories"]) == len(NAMES) and coco["categories"][gas - 1]["name"] == "gas_cylinder"
     assert not any(c["name"] == "fake_extinguisher" and c["id"] in {a["category_id"] for a in coco["annotations"]} for c in coco["categories"])
+
+
+def test_roboflow_upload(tmp_path, monkeypatch):
+    import sys, types
+    real = tmp_path / "real"
+    real.mkdir()
+    Image.new("RGB", (10, 10)).save(real / "a.jpg")
+    (real / "prelabels.json").write_text("{}")
+    calls = []
+
+    class WS:
+        def project(self, name):
+            if name == "missing":
+                raise RuntimeError("404")
+
+        def upload_dataset(self, stage, project, **kw):
+            calls.append((sorted(p.name for p in Path(stage).iterdir()), project, kw))
+
+    fake = types.ModuleType("roboflow")
+    fake.Roboflow = lambda api_key: types.SimpleNamespace(workspace=lambda name: WS())
+    monkeypatch.setitem(sys.modules, "roboflow", fake)
+    cfg = {"roboflow": {"workspace": "w", "project": "p"}}
+    al.roboflow_upload(cfg, tmp_path, "key")
+    assert calls == [(["_annotations.coco.json", "a.jpg"], "p", {"is_prediction": True, "batch_name": "prelabels"})]
+    with pytest.raises(RuntimeError, match="Create it in the Roboflow UI"):
+        al.roboflow_upload({"roboflow": {"workspace": "w", "project": "missing"}}, tmp_path, "key")
+    assert len(calls) == 1  # nothing is created or uploaded when the project does not exist

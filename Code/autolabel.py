@@ -20,6 +20,8 @@ import csv
 import json
 import math
 import os
+import shutil
+import tempfile
 from pathlib import Path
 
 from PIL import Image
@@ -149,6 +151,10 @@ def run(cfg, root, names, parents, detect):
     return counts
 
 
+def photos(real):
+    return [p for p in sorted(Path(real).iterdir()) if p.suffix.lower() in (".jpg", ".jpeg", ".png")]
+
+
 def prelabel(cfg, root, names, detect):
     """Detector proposals for every photo in real/ -> real/prelabels.json (COCO, category id = row in objects_table + 1).
     Only classes with a phrase in autolabel.prompts are proposed, so lookalikes are not: the detector cannot tell a
@@ -160,9 +166,7 @@ def prelabel(cfg, root, names, detect):
     if unknown:
         raise ValueError(f"autolabel.prompts has classes that are not in objects_table.csv: {unknown}")
     images, anns = [], []
-    for p in sorted(real.iterdir()):
-        if p.suffix.lower() not in (".jpg", ".jpeg", ".png"):
-            continue
+    for p in photos(real):
         img = Image.open(p)
         w, h = img.size
         images.append({"id": len(images) + 1, "file_name": p.name, "width": w, "height": h})
@@ -176,3 +180,24 @@ def prelabel(cfg, root, names, detect):
     cats = [{"id": i + 1, "name": n} for i, n in enumerate(names)]
     (real / "prelabels.json").write_text(json.dumps({"images": images, "annotations": anns, "categories": cats}))
     return {"images": len(images), "boxes": len(anns)}
+
+
+def roboflow_upload(cfg, root, api_key):
+    """Upload the photos in real/ with real/prelabels.json to an EXISTING Roboflow project, as predictions (to review,
+    not ground truth). The team then corrects them in Roboflow and exports COCO to real/annotations.json.
+    The project is never created from here: that would use the default public license, and the photos are
+    copyrighted web images (PRD 13). Create it in the Roboflow UI, private if the plan allows. Needs `pip install roboflow`."""
+    from roboflow import Roboflow
+
+    rb, real = cfg["roboflow"], Path(root) / "real"
+    ws = Roboflow(api_key=api_key).workspace(rb["workspace"])
+    try:
+        ws.project(rb["project"])
+    except Exception as e:
+        raise RuntimeError(f"Roboflow project {rb['project']!r} not found in workspace {rb['workspace']!r} ({e}). "
+                           "Create it in the Roboflow UI first (type: object detection).") from e
+    with tempfile.TemporaryDirectory() as stage:  # upload_dataset reads one folder: the photos plus one COCO file
+        for p in photos(real):
+            shutil.copy(p, Path(stage) / p.name)
+        shutil.copy(real / "prelabels.json", Path(stage) / "_annotations.coco.json")
+        ws.upload_dataset(stage, rb["project"], is_prediction=True, batch_name="prelabels")
