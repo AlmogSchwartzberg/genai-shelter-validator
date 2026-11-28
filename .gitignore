@@ -3,6 +3,9 @@ data/
 *.png
 *.jpg
 *.jpeg
+# ...but the EDA figures are results and belong in Git
+!Results/**/*.png
+!Visuals/**/*.png
 *.pt
 *.pth
 *.ckpt

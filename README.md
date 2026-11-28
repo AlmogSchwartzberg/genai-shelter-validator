@@ -16,6 +16,7 @@ We test whether synthetic images generated with Stable Diffusion improve light f
 | `Code/02_validate.ipynb` | Realism checks |
 | `Code/03_finetune.ipynb` | Fine-tune detection models |
 | `Code/04_results.ipynb` | Results table and plots |
+| `Code/05_eda.ipynb` | EDA of the synthetic dataset (lecturer's EDA guide): coverage, balance, boxes, duplicates, FID/IS, leakage. Tables to `Results/eda/`, figures to `Visuals/eda/` |
 
 Images, checkpoints and models are stored in Google Drive (`drive_root` in `config.yaml`), never in Git. Drive holds three folders, each created when first needed: `real`, `synthetic`, `results`.
 
